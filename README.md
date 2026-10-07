@@ -215,6 +215,8 @@ git subtree push --prefix dist origin gh-pages
 
 - ✅ `npm run check:sorts`：9 个排序算法全部通过（每个快照都是合法排列 + 最终升序 + 步数合理）
 - ✅ `npm run typecheck`（tsc 0 错误）、`npm run web:build`、`npm run timeline`、`npm run audio`（配乐 + mp3）
-- ✅ 网页实时版真实渲染：headless Chrome 打开 dev server 逐一截图（目录 / 插入 / 归并 / 基数 / 纯画面 / 调试界面）
+- ✅ 网页实时版真实渲染：headless Chrome 打开 dev server 逐一截图（目录 / 插入 / 归并 / 基数 / 调试界面）
+- ✅ **线上 Pages 与本地 dev 同一帧截图 sha256 完全一致**（`c8983c14…`）—— 逐帧渲染是确定性的，本地看到的和线上一样
+- ✅ GitHub Actions 自动部署：push 到 `main` → `npm ci` → `check:sorts` → `typecheck` → `web:build` → 发布 `dist`（见 `.github/workflows/deploy-web.yml`）
 - ✅ `npm run studio`：Remotion Studio 能打开 MV408，读到的尺寸/帧率/时长与 `src/timeline.ts` 一致
 - ⚠️ `npm run render`（出 mp4）尚未实跑：它需要下载 Chrome Headless Shell 并启动浏览器进程；渲染配置 `remotion.config.ts` 是 Remotion 官方 CLI 的标准用法
