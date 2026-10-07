@@ -6,8 +6,10 @@
 
 | 输出 | 命令 | 说明 |
 |---|---|---|
-| 渲染成片 mp4 | `npm run render` | `remotion render MV408 out/mv.mp4`，h264 / crf 17 / yuv420p |
+| 渲染成片 mp4 | `npm run render` | `remotion render MV408 out/mv.mp4`，h264 / crf 17 / yuv420p；已导出的成品在仓库根目录 `mv.mp4`（186.005 s / 56 MB） |
 | 网页实时版 | `npm run web:dev` / `npm run web:build` | `@remotion/player` 在浏览器里逐帧实时渲染，不导出视频 |
+| 文档截图 | `node scripts/make_screenshots.mjs` | 重出 `docs/screenshots/`（前 4 张 Remotion 逐帧渲染 + 最后 1 张网页版真实截图） |
+| 子集字体 | `python scripts/fetch_fonts.py` | 改了文案出现新字时重跑，保证成片与网页用的是同一套字型 |
 
 画面底部有一条**时间戳条**：每个排序的起始时间 + 名字，当前那一段高亮。它不是网页 UI，是烧进视频的。
 
@@ -225,4 +227,20 @@ git subtree push --prefix dist origin gh-pages
 - ✅ **线上 Pages 与本地 dev 同一帧截图 sha256 完全一致**（`c8983c14…`）—— 逐帧渲染是确定性的，本地看到的和线上一样
 - ✅ GitHub Actions 自动部署：push 到 `main` → `npm ci` → `check:sorts` → `typecheck` → `web:build` → 发布 `dist`（见 `.github/workflows/deploy-web.yml`）
 - ✅ `npm run studio`：Remotion Studio 能打开 MV408，读到的尺寸/帧率/时长与 `src/timeline.ts` 一致
-- ⚠️ `npm run render`（出 mp4）尚未实跑：它需要下载 Chrome Headless Shell 并启动浏览器进程；渲染配置 `remotion.config.ts` 是 Remotion 官方 CLI 的标准用法
+- ✅ **`npm run render` 已实跑**：`out/mv.mp4` = 11160 帧 / **186.005 s** / h264 1920×1080@60fps / AAC 48kHz 立体声 / 56 MB
+      （抽帧核对过画面与字体；仓库根目录的 `mv.mp4` 就是这次导出的成品）
+- ✅ 文档截图可用 `node scripts/make_screenshots.mjs` 一键重出（帧号按 `src/timeline.ts` 的章节位置算，不写死）
+
+## 渲染性能（实测，供下次参考）
+
+同一段 180 帧（3 秒）的渲染耗时，本机 RTX 5060 + 16 逻辑核：
+
+| 配置 | 耗时 | 结论 |
+|---|---|---|
+| 默认（SwiftShader 软件光栅，默认并发） | 15.0 s | 基准 |
+| `--gl=angle`（走真实显卡） | 15.8 s | **反而慢 5.7%，没用** |
+| `--concurrency=12` | 16.6 s | 更慢（线程争用） |
+| `--concurrency=16` | 14.0 s | 最快，约 +7% |
+
+结论：这类**文字/色块为主的 DOM 动画，瓶颈在浏览器布局绘制与编码，不在光栅化**，所以 GPU 帮不上忙
+（GPU 只对 WebGL / 大量 canvas 绘制的合成有意义）。想快就调 `--concurrency`，全片 11160 帧约 11–12 分钟。
