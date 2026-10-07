@@ -1,0 +1,37 @@
+{
+  "name": "remotion-player-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Remotion 工程 → 网页实时版 最小可跑模板（一套代码同时出 mp4 与网页实时播放）",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render MV408 out/mv.mp4",
+    "still": "remotion still MV408 out/still.png",
+    "web:dev": "vite",
+    "web:build": "vite build",
+    "web:preview": "vite preview --port 4173",
+    "typecheck": "tsc --noEmit",
+    "check:sort": "node scripts/check_sort_steps.mjs",
+    "timeline": "node scripts/export_timeline.mjs",
+    "audio": "python audio/make_music.py",
+    "audio:mp3": "ffmpeg -hide_banner -loglevel error -y -i public/music.wav -codec:a libmp3lame -b:a 128k -joint_stereo 1 web-public/music.mp3"
+  },
+  "dependencies": {
+    "@remotion/player": "^4.0.529",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "^4.0.529"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.529",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "esbuild": "^0.28.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}
