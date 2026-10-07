@@ -234,7 +234,12 @@ const App: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          <div ref={shellRef} style={{position: 'relative', width: 'min(100vw, 177.78vh)'}}>
+          <div
+            ref={shellRef}
+            style={{position: 'relative', width: 'min(100vw, 177.78vh)'}}
+            title="双击全屏"
+            onDoubleClick={toggleFullscreen}
+          >
             <Player
               ref={ref}
               component={Main}
@@ -292,7 +297,11 @@ const App: React.FC = () => {
                   }
             }
           >
-            <div style={{position: 'relative', width: isFullscreen ? 'min(100%, 177.78vh)' : '100%'}}>
+            <div
+              style={{position: 'relative', width: isFullscreen ? 'min(100%, 177.78vh)' : '100%'}}
+              title="双击全屏"
+              onDoubleClick={toggleFullscreen}
+            >
               <Player
                 ref={ref}
                 component={Main}
