@@ -149,10 +149,10 @@ src/
     Intro.tsx / Outro.tsx / ActTitle.tsx
     CacheDemo.tsx        另一个示例镜头（Cache 命中/替换），当前没排进时间轴
 web/                     网页实时版外壳（Player + 可选调试 UI）
-web-public/              网页上线用静态资源（music.mp3 / fonts / CNAME / .nojekyll）
-public/                  渲染用静态资源（母带 music.wav / 全量字体）
+web-public/              网页上线用静态资源（music.mp3 / fonts 子集字体 / .nojekyll）
+public/                  渲染用静态资源（母带 music.wav / fonts 子集字体）
 audio/make_music.py      程序化配乐脚本（numpy + 标准库 wave）
-scripts/                 时间轴导出、算法快照自检
+scripts/                 时间轴导出、算法快照自检、字体子集化（fetch_fonts.py）
 dist/                    web:build 产物（推到 gh-pages 的就是它）
 ```
 
@@ -188,8 +188,12 @@ dist/                    web:build 产物（推到 gh-pages 的就是它）
 
 | 目录 | 给谁用 | 放什么 |
 |---|---|---|
-| `public/` | Remotion 渲染（`staticFile()`） | 母带 `music.wav`、全量字体（体积大，`.gitignore` 掉） |
-| `web-public/` | 网页上线（Vite `publicDir`） | 压缩版 `music.mp3`、子集字体、`CNAME`、`.nojekyll` |
+| `public/` | Remotion 渲染（`staticFile()`） | 母带 `music.wav`（31 MB，`.gitignore` 掉）、`fonts/` 子集字体 |
+| `web-public/` | 网页上线（Vite `publicDir`） | 压缩版 `music.mp3`、`fonts/` 同一套子集字体、`.nojekyll` |
+
+字体是**随仓库提供的子集字体**（`Noto Sans SC` + `JetBrains Mono`，共约 0.5 MB，两个目录各一份），
+由 `python scripts/fetch_fonts.py` 按「源码里实际出现的字符」从 Google Fonts 裁剪生成 —— 改了文案出现新字就要重跑一次。
+详见 [`public/fonts/README.md`](public/fonts/README.md)。
 
 这样 `web:build` 出来的 `dist/` 不会把几十 MB 的母带带上线。
 

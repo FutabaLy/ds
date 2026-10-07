@@ -1,17 +1,17 @@
 import {continueRender, delayRender, staticFile} from 'remotion';
 
 /**
- * 字体清单：family 名字要和 CSS 里用的一致。
- * 把对应的 .ttf 丢进 public/fonts/ 就会自动生效；
- * 文件不存在时静默回退到系统字体（不会卡住渲染）。
+ * 字体清单：family 名字要和 CSS 里用的一致（见 src/theme.ts 的 FONT）。
+ *
+ * 字体**已随仓库提供**，是按「项目里实际用到的字符」子集化过的可变字体（共约 0.5 MB）：
+ *   public/fonts/       → Remotion 渲染用（staticFile('fonts/xx.ttf')）
+ *   web-public/fonts/   → 网页实时版用（Vite 的 publicDir）
+ * 需要重新生成（改文案后出现新字、或想换字体）就跑 `python scripts/fetch_fonts.py`；
+ * 若文件缺失，渲染与网页都会静默回退到系统字体，不会卡住。
  */
 export const FONT_FILES: [string, string][] = [
   ['Noto Sans SC', 'NotoSansSC.ttf'],
-  ['Noto Serif SC', 'NotoSerifSC.ttf'],
   ['JetBrains Mono', 'JetBrainsMono.ttf'],
-  ['Orbitron', 'Orbitron.ttf'],
-  ['Rajdhani', 'Rajdhani.ttf'],
-  ['Unbounded', 'Unbounded.ttf'],
 ];
 
 let started = false;
