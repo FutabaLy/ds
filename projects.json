@@ -1,0 +1,14 @@
+{
+  "siteTitle": "ds",
+  "siteDesc": "数据结构教学 / 可视化项目合集。每个项目都是浏览器实时逐帧渲染（Remotion Player）。",
+  "repo": "https://github.com/FutabaLy/ds",
+  "projects": [
+    {
+      "dir": "sorting-mv",
+      "title": "数据结构 · 排序 MV",
+      "desc": "9 种内部排序逐个动画：直接插入 / 折半插入 / 希尔 / 冒泡 / 快速 / 简单选择 / 堆 / 归并 / 基数。画面底部的时间戳条可以直接点着跳章节。",
+      "tags": ["9 种排序", "1920×1080 @60fps", "可点击章节条"],
+      "note": "?frame=1000 直达第 2 段（插入排序）· ?ui=1 显示调试界面 · ?full=1 铺满视口"
+    }
+  ]
+}

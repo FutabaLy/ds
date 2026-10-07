@@ -1,6 +1,6 @@
 # 数据结构 · 排序 MV（Remotion 工程 → 网页实时版）
 
-> 🎬 在线预览（GitHub Pages，浏览器实时逐帧渲染，不播 mp4）：**https://futabaly.github.io/ds/**
+> 🎬 在线预览（GitHub Pages，浏览器实时逐帧渲染，不播 mp4）：**https://futabaly.github.io/ds/sorting-mv/**
 
 9 种内部排序，每个算法一段逐帧动画。同一套 Remotion（React）代码产出两种东西：
 

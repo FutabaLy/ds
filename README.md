@@ -6,7 +6,18 @@
 
 | 项目 | 内容 | 产物 | 怎么跑 |
 |---|---|---|---|
-| [sorting-mv](projects/sorting-mv/) | **数据结构 · 排序 MV**：9 种内部排序（直接插入 / 折半插入 / 希尔 / 冒泡 / 快速 / 简单选择 / 堆 / 归并 / 基数）逐帧动画，1920×1080@60fps，底部时间戳条可点击跳章节 | [`projects/sorting-mv/docs/screenshots/`](projects/sorting-mv/docs/screenshots/)、网页实时版 **https://futabaly.github.io/ds/** | `cd projects/sorting-mv && npm i && npm run web:dev`（预览）/ `npm run render`（出片） |
+| [sorting-mv](projects/sorting-mv/) | **数据结构 · 排序 MV**：9 种内部排序（直接插入 / 折半插入 / 希尔 / 冒泡 / 快速 / 简单选择 / 堆 / 归并 / 基数）逐帧动画，1920×1080@60fps，底部时间戳条可点击跳章节 | [`projects/sorting-mv/docs/screenshots/`](projects/sorting-mv/docs/screenshots/)、在线观看 **https://futabaly.github.io/ds/sorting-mv/** | `cd projects/sorting-mv && npm i && npm run web:dev`（预览）/ `npm run render`（出片） |
+
+## 在线站点
+
+一个仓库只有一个 GitHub Pages 站点，所以**根地址是门户页，各项目挂在子路径**（以后加片子不会互相占位）：
+
+| 地址 | 内容 |
+|---|---|
+| https://futabaly.github.io/ds/ | 门户页：项目卡片索引（按 `projects.json` 生成） |
+| https://futabaly.github.io/ds/sorting-mv/ | 排序 MV（浏览器实时渲染；底部时间戳条可以直接点着跳章节） |
+
+![门户页](docs/portal.png)
 
 ## 目录约定
 
@@ -23,7 +34,8 @@ projects/<项目名>/        每个项目自成一体
 1. `mkdir -p projects/<名字>`，把工程放进去（照着 `sorting-mv` 的结构来）；
 2. 项目里至少要有 `README.md`（运行/导出说明）和 `npm run check`（类型检查 + 数值自检）；
 3. 在上面的**项目索引**表里加一行；
-4. 把项目名加进 `.github/workflows/check.yml` 的 `matrix.project` 列表（一处）；
+4. 在 `projects.json` 里加一条（门户页的卡片就出来了，URL 即 `/ds/<项目目录>/`）；
+5. 把项目名加进 `.github/workflows/check.yml` 的 `matrix.project` 列表（一处）；
 5. 成品（视频/图/文档）放项目根目录或 `docs/`；`node_modules/`、`out/`、`dist/` 这些中间产物别提交 —— 各项目的 `.gitignore` 已经写好了。
 
 ## 跨项目约定（与 network 仓库一致）
@@ -36,4 +48,4 @@ projects/<项目名>/        每个项目自成一体
 ## CI 与部署
 
 - `.github/workflows/check.yml`：push / PR 时对每个项目跑 `npm ci && npm run check` 与 `npm run web:build`；
-- `.github/workflows/deploy-web.yml`：改动 `projects/sorting-mv/**` 时自动构建并发布到 GitHub Pages（线上地址 **https://futabaly.github.io/ds/**）。
+- `.github/workflows/deploy-web.yml`：改动 `projects/**` 或 `projects.json` 时，自动校验所有项目 → 逐个构建 → 组装门户页 + 子路径 → 发布到 GitHub Pages（**https://futabaly.github.io/ds/**）。
