@@ -139,7 +139,7 @@ const App: React.FC = () => {
   const current = ACT_RANGES.find((a) => frame >= a.s && frame < a.e) ?? ACT_RANGES[0];
   return (
     <div style={{maxWidth: 1280, margin: '0 auto', padding: '24px 16px 64px'}}>
-      <h1 style={{fontSize: 22, margin: '8px 0 4px'}}>408 MV · 网页实时渲染版（模板）</h1>
+      <h1 style={{fontSize: 22, margin: '8px 0 4px'}}>数据结构 · 排序 MV · 网页实时渲染版</h1>
       <p style={{color: '#9aa7c2', margin: '0 0 16px', fontSize: 14}}>
         共 {TOTAL} 帧 / {fmt(TOTAL)}（{FPS}fps，1920×1080），浏览器用 Remotion Player 实时逐帧渲染，不导出 mp4。
         当前幕：<span style={{color: current.color}}>{current.key}</span> · 当前帧：{frame}（{fmt(frame)}）
