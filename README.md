@@ -178,6 +178,7 @@ dist/                    web:build 产物（推到 gh-pages 的就是它）
 | `?frame=2200` | 深链：直接定位到第 N 帧 |
 
 - **章节跳转**：`playerRef.seekTo(ACT_RANGES[i].s)`，`?ui=1` 下那排按钮就是 `ACT_RANGES` 渲染出来的；
+- **底部时间戳条可以直接点**：画面里那条是烧进视频的（渲染成片里也有，静态信息），网页版在**同一位置**叠了一层透明按钮，点哪个排序就 seek 到那一段的起始帧——两者位置/宽度都按 1920×1080 的同一套比例算，严丝合缝；
 - **状态回读**：播放器用事件往外推状态（`play` / `pause` / `frameupdate`）——
   ⚠️ `onFrameUpdate` 这类 prop 在新版 `@remotion/player` 里已经没有，要用 `addEventListener('frameupdate', …)`；
 - **字体**：`FontFace` 异步加载，不阻塞首屏；渲染端则用 `delayRender/continueRender` 等字体就绪。

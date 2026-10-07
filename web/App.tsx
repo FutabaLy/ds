@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Player, type PlayerRef} from '@remotion/player';
 import {FONT_FILES} from '../src/fonts';
 import {Main} from '../src/Main';
-import {ACT_RANGES, TOTAL} from '../src/timeline';
+import {ACT_RANGES, SORT_CHAPTERS, SORT_RANGE, TOTAL} from '../src/timeline';
 
 const FPS = 60;
 const BASE = import.meta.env.BASE_URL;
@@ -51,11 +51,73 @@ const Btn: React.FC<{onClick: () => void; children: React.ReactNode; color?: str
   </button>
 );
 
+/**
+ * 叠在画面底部「时间戳条」上的透明按钮层。
+ *
+ * 时间戳条本身是烧进视频的（渲染成片里也有，静态信息）；
+ * 这里让它在**网页实时版**上可以点击跳转 —— 位置/宽度/间距都按 1920×1080 里
+ * 同一套比例算，所以和画面里那条严丝合缝地重合，按钮本身是全透明的。
+ */
+const ChapterStrip: React.FC<{active: number; onSeek: (frame: number) => void}> = ({active, onSeek}) => {
+  const [hover, setHover] = useState<number | null>(null);
+  return (
+    <div style={{position: 'absolute', inset: 0, pointerEvents: 'none'}}>
+      <div
+        style={{
+          position: 'absolute',
+          left: '6.1458%' /* 118 / 1920 */,
+          right: '6.1458%',
+          bottom: '4.8148%' /* 52 / 1080 */,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+        }}
+      >
+        {SORT_CHAPTERS.map((c, i) => (
+          <button
+            key={c.key}
+            type="button"
+            data-chapter={i}
+            data-start={c.start}
+            title={`跳到 ${c.name}（${fmt(c.start)}）`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSeek(c.start);
+            }}
+            onMouseEnter={() => setHover(i)}
+            onMouseLeave={() => setHover(null)}
+            style={{
+              pointerEvents: 'auto',
+              width: '9.6875%' /* 186 / 1920 */,
+              height: '5.8%',
+              minHeight: 36,
+              padding: 0,
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              // 只在鼠标悬停时给一点提示；「当前章节」的高亮交给画面里烧进去的那条，避免两条线错位
+              background: hover === i ? 'rgba(255,255,255,0.10)' : 'transparent',
+              boxShadow: hover === i ? `inset 0 0 0 1px ${c.color}88` : 'none',
+              transition: 'background 120ms',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const ref = useRef<PlayerRef>(null);
   const [frame, setFrame] = useState(FRAME0);
   const [mute, setMute] = useState(false);
   const [playing, setPlaying] = useState(false);
+  // 当前处在第几个排序列（-1 = 不在某个算法那一段里）
+  const [chapter, setChapter] = useState(() =>
+    SORT_CHAPTERS.findIndex((c) => FRAME0 >= c.start && FRAME0 < c.end),
+  );
+  // 是否处在「排序段落」——与画面里那条烧进去的时间戳条同一个显示区间
+  const [showStrip, setShowStrip] = useState(() => FRAME0 >= SORT_RANGE.from && FRAME0 <= SORT_RANGE.to);
 
   // 字体异步加载，不阻塞首屏；没下完先用系统字体顶（public 里没有字体时静默跳过）
   useEffect(() => {
@@ -79,15 +141,14 @@ const App: React.FC = () => {
     if (!p) return;
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
-    if (!UI) {
-      p.addEventListener('play', onPlay);
-      p.addEventListener('pause', onPause);
-      return () => {
-        p.removeEventListener('play', onPlay);
-        p.removeEventListener('pause', onPause);
-      };
-    }
-    const onFrame = ({detail}: {detail: {frame: number}}) => setFrame(detail.frame);
+    const onFrame = ({detail}: {detail: {frame: number}}) => {
+      if (UI) setFrame(detail.frame);
+      // 只在「状态真的变了」时 setState，避免每帧重渲染整个页面
+      const idx = SORT_CHAPTERS.findIndex((c) => detail.frame >= c.start && detail.frame < c.end);
+      setChapter((prev) => (prev === idx ? prev : idx));
+      const inRange = detail.frame >= SORT_RANGE.from && detail.frame <= SORT_RANGE.to;
+      setShowStrip((prev) => (prev === inRange ? prev : inRange));
+    };
     p.addEventListener('play', onPlay);
     p.addEventListener('pause', onPause);
     p.addEventListener('frameupdate', onFrame);
@@ -99,21 +160,25 @@ const App: React.FC = () => {
   }, []);
 
   const player = (
-    <Player
-      ref={ref}
-      component={Main}
-      inputProps={{musicSrc: `${BASE}music.mp3`, mute, hud: HUD}}
-      durationInFrames={TOTAL}
-      fps={FPS}
-      compositionWidth={1920}
-      compositionHeight={1080}
-      initialFrame={FRAME0}
-      controls={UI}
-      loop
-      clickToPlay
-      acknowledgeRemotionLicense
-      style={UI ? {width: '100%'} : {width: 'min(100vw, 177.78vh)'}}
-    />
+    <div style={{position: 'relative', width: UI ? '100%' : 'min(100vw, 177.78vh)'}}>
+      <Player
+        ref={ref}
+        component={Main}
+        inputProps={{musicSrc: `${BASE}music.mp3`, mute, hud: HUD}}
+        durationInFrames={TOTAL}
+        fps={FPS}
+        compositionWidth={1920}
+        compositionHeight={1080}
+        initialFrame={FRAME0}
+        controls={UI}
+        loop
+        clickToPlay
+        acknowledgeRemotionLicense
+        style={{width: '100%'}}
+      />
+      {/* 画面底部时间戳条的可点击层：与烧进画面的那条同区间显示，点击 seek 到该章节起始帧 */}
+      {showStrip ? <ChapterStrip active={chapter} onSeek={(f) => ref.current?.seekTo(f)} /> : null}
+    </div>
   );
 
   // 默认模式：只有画面。点一下播放，空格暂停/继续，双击全屏。
