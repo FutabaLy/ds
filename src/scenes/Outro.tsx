@@ -8,9 +8,9 @@ import {COL, FONT, prog, rgba} from '../theme';
 export const OUTRO_DUR = 480;
 
 const ROWS: [string, string, string][] = [
-  ['渲染成片', 'npx remotion render MV408 out/mv.mp4', COL.intro],
-  ['网页实时版', 'Remotion Player 逐帧实时渲染', COL.cn],
-  ['同一份代码', '时间轴 / 场景 / 音频全部复用', COL.co],
+  ['9 种内部排序', '插入 · 折半插入 · 希尔 · 冒泡 · 快速 · 简单选择 · 堆 · 归并 · 基数', COL.ds],
+  ['底部时间戳', '每个排序的起始时间就是章节名，随时可以跳回去看', COL.co],
+  ['两种输出', 'remotion render 出 mp4 / Remotion Player 网页实时渲染', COL.intro],
 ];
 
 export const Outro: React.FC = () => {

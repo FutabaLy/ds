@@ -11,7 +11,8 @@
     "web:build": "vite build",
     "web:preview": "vite preview --port 4173",
     "typecheck": "tsc --noEmit",
-    "check:sort": "node scripts/check_sort_steps.mjs",
+    "check": "npm run typecheck && npm run check:sorts",
+    "check:sorts": "node scripts/check_sorts.mjs",
     "timeline": "node scripts/export_timeline.mjs",
     "audio": "python audio/make_music.py",
     "audio:mp3": "ffmpeg -hide_banner -loglevel error -y -i public/music.wav -codec:a libmp3lame -b:a 128k -joint_stereo 1 web-public/music.mp3"

@@ -176,20 +176,20 @@ def main() -> None:
                 break
 
         # 铺底 Pad（每幕都有，fin 弱一点）
-        pad_gain = {'intro': 0.20, 'ds': 0.13, 'co': 0.16, 'fin': 0.14}.get(sec, 0.14)
+        pad_gain = {'intro': 0.20, 'sorts': 0.15, 'ds': 0.13, 'co': 0.16, 'fin': 0.14}.get(sec, 0.14)
         for i, m in enumerate(notes[:3]):
             sig = pad(mtof(m), int(SR * BAR * 1.2)) * env_ad(int(SR * BAR * 1.2), 0.35, 1.2, 2.5)
             add(mix, t0, sig, pad_gain, pan=0.35 if i % 2 else -0.35)
 
         # 低音：ds/co 走八分音符
-        if sec in ('ds', 'co'):
+        if sec in ('ds', 'co', 'sorts'):
             for beat in range(4):
                 m = notes[0] - 12
                 sig = (sine(mtof(m), int(SR * BEAT * 0.9)) * env_ad(int(SR * BEAT * 0.9), 0.005, 0.25, 4.0))
                 add(mix, t0 + beat * BEAT, sig, 0.34)
 
         # 鼓：ds 四踩、co 两踩
-        if sec == 'ds':
+        if sec in ('ds', 'sorts'):
             for beat in range(4):
                 add(mix, t0 + beat * BEAT, kick(int(SR * 0.42)), 0.5)
                 add(mix, t0 + beat * BEAT + BEAT / 2, hat(int(SR * 0.05)), 0.12, pan=0.25)
@@ -200,8 +200,8 @@ def main() -> None:
                 add(mix, t0 + beat * BEAT / 2, hat(int(SR * 0.04)), 0.07, pan=-0.25)
 
         # 琶音：ds 十六分、co 八分、intro 稀疏
-        arp_step = {'intro': 1.0, 'ds': 0.25, 'co': 0.5, 'fin': 0.5}.get(sec, 0.5)
-        arp_gain = {'intro': 0.10, 'ds': 0.13, 'co': 0.11, 'fin': 0.09}.get(sec, 0.1)
+        arp_step = {'intro': 1.0, 'sorts': 0.25, 'ds': 0.25, 'co': 0.5, 'fin': 0.5}.get(sec, 0.5)
+        arp_gain = {'intro': 0.10, 'sorts': 0.12, 'ds': 0.13, 'co': 0.11, 'fin': 0.09}.get(sec, 0.1)
         k = 0
         t = 0.0
         while t < BAR - 1e-6:

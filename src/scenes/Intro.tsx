@@ -60,14 +60,14 @@ export const Intro: React.FC = () => {
             filter: `drop-shadow(0 0 42px ${rgba(COL.intro, 0.45)})`,
           }}
         >
-          408 MV
+          408 · 排序
         </div>
         <div style={{fontFamily: FONT.sans, fontSize: 32, color: COL.dim, marginTop: 26, letterSpacing: 6, opacity: 0.15 + 0.85 * prog(f, 6, 30)}}>
-          数据结构 · 组成原理 · 操作系统 · 计算机网络
+          数据结构 · 9 种内部排序全览
         </div>
         <div style={{marginTop: 44, opacity: 0.1 + 0.9 * prog(f, 12, 30)}}>
-          <Chip text="Remotion 4" color={COL.intro} />
-          <Chip text="1920×1080" color={COL.cn} />
+          <Chip text="直接插入 → 基数" color={COL.intro} />
+          <Chip text="9 段逐帧动画" color={COL.cn} />
           <Chip text="60fps" color={COL.co} />
           <Chip text="网页实时渲染" color={COL.os} />
         </div>
