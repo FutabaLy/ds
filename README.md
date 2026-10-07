@@ -1,20 +1,22 @@
 # ds
 
-数据结构相关的教学 / 可视化项目合集（monorepo，与 [network](../network) 仓库同构）。每个项目独立放在 `projects/<名字>/`，各有自己的 `package.json`、README 和校验脚本。
+数据结构相关的教学 / 可视化项目合集（monorepo，与 [network](https://github.com/FutabaLy/network) 仓库同构）。每个项目独立放在 `projects/<名字>/`，各有自己的 `package.json`、README 和校验脚本。
 
 ## 项目索引
 
-| 项目 | 内容 | 产物 | 怎么跑 |
+| 项目 | 内容 | 产物 | 怎么看 / 怎么跑 |
 |---|---|---|---|
-| [sorting-mv](projects/sorting-mv/) | **数据结构 · 排序 MV**：9 种内部排序（直接插入 / 折半插入 / 希尔 / 冒泡 / 快速 / 简单选择 / 堆 / 归并 / 基数）逐帧动画，1920×1080@60fps，底部时间戳条可点击跳章节 | [`projects/sorting-mv/docs/screenshots/`](projects/sorting-mv/docs/screenshots/)、在线观看 **https://futabaly.github.io/ds/sorting-mv/** | `cd projects/sorting-mv && npm i && npm run web:dev`（预览）/ `npm run render`（出片） |
+| [sorting-mv](projects/sorting-mv/) | **数据结构 · 排序 MV**：9 种内部排序（直接插入 / 折半插入 / 希尔 / 冒泡 / 快速 / 简单选择 / 堆 / 归并 / 基数）逐帧动画，1920×1080@60fps；底部时间戳条可直接点着跳章节 | [docs/screenshots/](projects/sorting-mv/docs/screenshots/)、在线观看 **https://futabaly.github.io/ds/sorting-mv/** | `cd projects/sorting-mv && npm i && npm run web:dev`（预览）/ `npm run render`（出片） |
 
 ## 在线站点
 
-一个仓库只有一个 GitHub Pages 站点，所以**根地址是门户页，各项目挂在子路径**（以后加片子不会互相占位）：
+一个仓库只有一个 GitHub Pages 站点，所以**根地址是门户页，各项目挂在子路径**（以后加片子不会互相占位）。
+
+**URL 规则（固定约定）**：`https://futabaly.github.io/ds/<项目目录>/` —— 由 `projects.json` 决定，加项目不用改构建脚本或工作流；门户页固定在根地址。
 
 | 地址 | 内容 |
 |---|---|
-| https://futabaly.github.io/ds/ | 门户页：项目卡片索引（按 `projects.json` 生成） |
+| [sorting-mv](projects/sorting-mv/) | **数据结构 · 排序 MV**：9 种内部排序（直接插入 / 折半插入 / 希尔 / 冒泡 / 快速 / 简单选择 / 堆 / 归并 / 基数）逐帧动画，1920×1080@60fps；底部时间戳条可直接点着跳章节 | [docs/screenshots/](projects/sorting-mv/docs/screenshots/)、在线观看 **https://futabaly.github.io/ds/sorting-mv/** | `cd projects/sorting-mv && npm i && npm run web:dev`（预览）/ `npm run render`（出片） |
 | https://futabaly.github.io/ds/sorting-mv/ | 排序 MV（浏览器实时渲染；底部时间戳条可以直接点着跳章节） |
 
 ![门户页](docs/portal.png)
@@ -24,28 +26,34 @@
 ```
 projects/<项目名>/        每个项目自成一体
   src/                    源码（画面全部由代码生成，不放素材）
-  docs/                   说明、验证文档、截图
+  docs/                   说明、验证文档、成片抽帧
+  <成片>.mp4              成品直接放项目根目录，方便点开就看
   README.md               怎么跑、怎么导出、验证结果
-.github/workflows/        CI：check.yml（校验各项目）+ deploy-web.yml（排序 MV 的 Pages 部署）
+projects.json             ★ 门户页与线上地址的唯一数据源（加项目 = 加一条）
+scripts/build-pages.mjs   构建各项目 + 组装 Pages 产物（门户页 + 子路径）
+docs/portal.png           门户页截图（放在 README 里）
+.github/workflows/        check.yml（校验各项目）+ deploy-web.yml（构建并发布 Pages）
 ```
 
 ## 加一个新项目
 
 1. `mkdir -p projects/<名字>`，把工程放进去（照着 `sorting-mv` 的结构来）；
-2. 项目里至少要有 `README.md`（运行/导出说明）和 `npm run check`（类型检查 + 数值自检）；
+2. 项目里至少要有 `README.md`（运行/导出说明）和 `npm run check`（类型检查 + 数值自检）；Vite 的 `base` 保持 `'./'`（相对路径），这样搬到子路径不用改代码；
 3. 在上面的**项目索引**表里加一行；
-4. 在 `projects.json` 里加一条（门户页的卡片就出来了，URL 即 `/ds/<项目目录>/`）；
-5. 把项目名加进 `.github/workflows/check.yml` 的 `matrix.project` 列表（一处）；
-5. 成品（视频/图/文档）放项目根目录或 `docs/`；`node_modules/`、`out/`、`dist/` 这些中间产物别提交 —— 各项目的 `.gitignore` 已经写好了。
+4. 在 `projects.json` 里加一条 —— **门户页卡片和线上地址都由它生成**，URL 固定为 `https://futabaly.github.io/ds/<项目目录>/`；不用动 `scripts/build-pages.mjs`，也不用改工作流；
+5. 把项目名加进 `.github/workflows/check.yml` 的 `matrix.project` 列表（一处，用于跑校验）；
+6. 成品（视频/图/文档）放项目根目录或 `docs/`；`node_modules/`、`out/`、`dist/` 这些中间产物别提交 —— 各项目的 `.gitignore` 已经写好了。
 
-## 跨项目约定（与 network 仓库一致）
+## 跨项目约定（复用同一套做法）
 
-- **视频类项目用 Remotion**：React 写动画、逐帧渲染；同一套代码既能出 MP4，也能用 `@remotion/player` 在浏览器实时播。
-- **单一参数源 / 单一数据源**：画面里出现的每个数字都从一个文件算出来（排序 MV 里是 `src/timeline.ts` + 各算法的快照），结构上排除「公式与动画互相矛盾」。
-- **算法动画的硬约束**：任何中间快照都必须是合法排列（元素不重复、不丢失），由 `npm run check:sorts` 全量校验。
-- **交付**：可编辑源码 + 预览图/成片 + 验证说明。
+- **视频类项目用 Remotion**：React 写动画、逐帧渲染；同一套代码既能出 MP4，也能用 `@remotion/player` 在浏览器实时播（`npm run web:dev`）。
+- **站点结构固定为「门户 + 子路径」**：一个仓库只有一个 Pages 站点 —— 根地址是门户页，每个项目一个子路径 `/<仓库名>/<项目目录>/`，全部由 `projects.json` 生成，新项目天然不会和旧项目抢地址。
+- **单一参数源**：画面里出现的每个数字（公式、时间轴、动画位置、结论卡）都从一个参数文件算出来，结构上排除「公式与动画互相矛盾」。
+- **中文旁白用 edge-tts**（`zh-CN-XiaoxiaoNeural`，语速可调）逐条合成并 ffprobe 实测时长；**字幕与画面字幕层同源**，再导出 `.srt`。
+- **交付四件套**：成片 MP4 + 可编辑源码（含运行/导出说明）+ 中文旁白稿与字幕 + 验证说明。
+- **导出前逐帧检查**：渲染每个分镜的代表帧目检文字是否溢出/压字、字幕是否同步、数字是否正确，改完重渲染复看。
 
-## CI 与部署
+## CI
 
-- `.github/workflows/check.yml`：push / PR 时对每个项目跑 `npm ci && npm run check` 与 `npm run web:build`；
+`.github/workflows/check.yml` 对索引里的每个项目跑 `npm ci && npm run check`（类型检查 + 数值自检）与 `npm run web:build`，push / PR 都会触发。
 - `.github/workflows/deploy-web.yml`：改动 `projects/**` 或 `projects.json` 时，自动校验所有项目 → 逐个构建 → 组装门户页 + 子路径 → 发布到 GitHub Pages（**https://futabaly.github.io/ds/**）。
