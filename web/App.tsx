@@ -17,6 +17,8 @@ const Q = new URLSearchParams(window.location.search);
  */
 const UI = Q.get('ui') === '1';
 const HUD = Q.get('hud') === '1';
+/** ?full=1：铺满整个视口（默认是居中卡片，适合截图 / iframe 嵌入时用这个） */
+const FULL = Q.get('full') === '1';
 const FRAME0 = (() => {
   const n = Number.parseInt(Q.get('frame') ?? '0', 10);
   return Number.isFinite(n) ? Math.max(0, Math.min(TOTAL - 1, n)) : 0;
@@ -51,6 +53,18 @@ const Btn: React.FC<{onClick: () => void; children: React.ReactNode; color?: str
   </button>
 );
 
+const ghostBtn: React.CSSProperties = {
+  background: 'transparent',
+  color: '#cfd9ee',
+  border: '1px solid #2a3550',
+  borderRadius: 8,
+  padding: '6px 14px',
+  fontSize: 13,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  whiteSpace: 'nowrap',
+};
+
 /**
  * 叠在画面底部「时间戳条」上的透明按钮层。
  *
@@ -82,7 +96,8 @@ const ChapterStrip: React.FC<{active: number; onSeek: (frame: number) => void}> 
             title={`跳到 ${c.name}（${fmt(c.start)}）`}
             onClick={(e) => {
               e.stopPropagation();
-              onSeek(c.start);
+              // 多跳 0.6s：章节起始帧正好是转场开始，暂停状态下会停在模糊的过渡帧上
+              onSeek(Math.min(TOTAL - 1, c.start + 36));
             }}
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(null)}
@@ -118,6 +133,28 @@ const App: React.FC = () => {
   );
   // 是否处在「排序段落」——与画面里那条烧进去的时间戳条同一个显示区间
   const [showStrip, setShowStrip] = useState(() => FRAME0 >= SORT_RANGE.from && FRAME0 <= SORT_RANGE.to);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // 全屏状态跟随浏览器（按 Esc 退出时按钮要跟着变回来）
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === shellRef.current);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  // 让「包裹层」全屏而不是只让 video 全屏：这样画面底部那条可点击的时间戳条也一起进去
+  const toggleFullscreen = () => {
+    const el = shellRef.current as (HTMLDivElement & {webkitRequestFullscreen?: () => void}) | null;
+    if (!el) return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else if (el.requestFullscreen) {
+      void el.requestFullscreen();
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    }
+  };
 
   // 字体异步加载，不阻塞首屏；没下完先用系统字体顶（public 里没有字体时静默跳过）
   useEffect(() => {
@@ -181,21 +218,120 @@ const App: React.FC = () => {
     </div>
   );
 
-  // 默认模式：只有画面。点一下播放，空格暂停/继续，双击全屏。
+  // 默认模式：画面居中放在一张卡片里（不铺满整屏），下方可以放大到全屏。
+  // 点一下播放、空格暂停/继续、双击画面也能全屏；?full=1 则铺满视口。
   if (!UI) {
+    if (FULL) {
+      return (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+          }}
+        >
+          <div ref={shellRef} style={{position: 'relative', width: 'min(100vw, 177.78vh)'}}>
+            <Player
+              ref={ref}
+              component={Main}
+              inputProps={{musicSrc: `${BASE}music.mp3`, mute, hud: HUD}}
+              durationInFrames={TOTAL}
+              fps={FPS}
+              compositionWidth={1920}
+              compositionHeight={1080}
+              initialFrame={FRAME0}
+              controls={false}
+              loop
+              clickToPlay
+              acknowledgeRemotionLicense
+              style={{width: '100%', display: 'block'}}
+            />
+            {showStrip ? <ChapterStrip active={chapter} onSeek={(f) => ref.current?.seekTo(f)} /> : null}
+          </div>
+        </div>
+      );
+    }
     return (
       <div
         style={{
-          position: 'fixed',
-          inset: 0,
-          background: '#000',
+          minHeight: '100vh',
+          background: '#02040a',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden',
+          padding: '28px 20px 36px',
+          boxSizing: 'border-box',
         }}
       >
-        {player}
+        <div style={{width: '100%', maxWidth: 'min(1280px, 158vh)'}}>
+          <div
+            ref={shellRef}
+            style={
+              isFullscreen
+                ? {
+                    width: '100vw',
+                    height: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#000',
+                  }
+                : {
+                    position: 'relative',
+                    width: '100%',
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                    border: '1px solid #1c2742',
+                    background: '#000',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.55)',
+                  }
+            }
+          >
+            <div style={{position: 'relative', width: isFullscreen ? 'min(100%, 177.78vh)' : '100%'}}>
+              <Player
+                ref={ref}
+                component={Main}
+                inputProps={{musicSrc: `${BASE}music.mp3`, mute, hud: HUD}}
+                durationInFrames={TOTAL}
+                fps={FPS}
+                compositionWidth={1920}
+                compositionHeight={1080}
+                initialFrame={FRAME0}
+                controls={false}
+                loop
+                clickToPlay
+                acknowledgeRemotionLicense
+                style={{width: '100%', display: 'block'}}
+              />
+              {/* 画面底部时间戳条的可点击层 */}
+              {showStrip ? <ChapterStrip active={chapter} onSeek={(f) => ref.current?.seekTo(f)} /> : null}
+            </div>
+          </div>
+
+          {isFullscreen ? null : (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                marginTop: 12,
+                fontSize: 13,
+                color: '#7c8aa6',
+              }}
+            >
+              <span>点画面播放 · 空格暂停/继续 · 点底部时间戳跳到对应排序 · 双击画面或点右侧按钮全屏</span>
+              <button type="button" onClick={toggleFullscreen} style={ghostBtn}>
+                放大 ⤢
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

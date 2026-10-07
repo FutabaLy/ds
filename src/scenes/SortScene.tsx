@@ -30,9 +30,26 @@ export const SortScene: React.FC<{algo: Algo; per: number; color: string}> = ({a
         }}
       />
       <SortStage steps={steps} meta={algo} start={30} per={per} />
-      <Txt x={140} y={890} size={21} mono color={COL.faint}>
-        平均 {algo.time} · 空间 {algo.space} · {algo.stable ? '稳定排序' : '不稳定排序'}
-      </Txt>
+      {/* 复杂度脚注：原来用 COL.faint(#4b5872) 太暗，几乎看不清；关键值用本段主题色点出来 */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 140,
+          top: 884,
+          fontFamily: FONT.mono,
+          fontSize: 22,
+          letterSpacing: 0.5,
+          color: 'rgba(223,232,255,0.82)',
+        }}
+      >
+        平均 <span style={{color, fontWeight: 700}}>{algo.time}</span>
+        <span style={{color: 'rgba(223,232,255,0.45)'}}> · </span>
+        空间 <span style={{color, fontWeight: 700}}>{algo.space}</span>
+        <span style={{color: 'rgba(223,232,255,0.45)'}}> · </span>
+        <span style={{color: algo.stable ? '#4ade80' : '#fb923c', fontWeight: 700}}>
+          {algo.stable ? '稳定排序' : '不稳定排序'}
+        </span>
+      </div>
     </AbsoluteFill>
   );
 };

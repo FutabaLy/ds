@@ -194,7 +194,7 @@ export const SortStage: React.FC<{
           top: area.y + area.h + 50,
           fontFamily: FONT.mono,
           fontSize: 19,
-          color: rgba('#eef3ff', 0.4),
+          color: rgba('#eef3ff', 0.62),
         }}
       >
         步骤 {idx + 1}/{steps.length}

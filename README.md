@@ -156,7 +156,7 @@ scripts/                 时间轴导出、算法快照自检
 dist/                    web:build 产物（推到 gh-pages 的就是它）
 ```
 
-## 网页实时版（默认只有画面）
+## 网页实时版（默认居中卡片，可放大）
 
 ```tsx
 <Player
@@ -166,19 +166,20 @@ dist/                    web:build 产物（推到 gh-pages 的就是它）
   compositionWidth={1920} compositionHeight={1080}
   controls={UI}                                          // 只有 ?ui=1 才出进度条等控件
   loop clickToPlay acknowledgeRemotionLicense
-  style={UI ? {width: '100%'} : {width: 'min(100vw, 177.78vh)'}}   // 默认整屏 16:9
+  style={{width: '100%'}}                                // 外层容器负责居中/铺满
 />
 ```
 
 | URL 参数 | 效果 |
 |---|---|
-| 无参数 | **纯画面**：整屏 16:9，点一下播放、空格暂停/继续、双击全屏；没有进度条、没有章节按钮 |
+| 无参数 | **居中卡片**：画面居中（最大 1280px，圆角+边框+投影，不铺满整屏）；点画面播放、空格暂停/继续、双击画面或点右下「放大 ⤢」按钮全屏（全屏时底部时间戳条一起进去）；没有播放器进度条、没有章节按钮 |
+| `?full=1` | 铺满整个视口（截图、iframe 嵌入时用这个） |
 | `?ui=1` | 调试 UI：标题说明、章节跳转按钮、播放/静音、当前帧读数、播放器进度条 |
 | `?hud=1` | 额外把幕名 / 时间码 / 进度圈（ActHUD）烧进画面（渲染成片可传 `<Composition defaultProps={{hud: true}}>`） |
 | `?frame=2200` | 深链：直接定位到第 N 帧 |
 
 - **章节跳转**：`playerRef.seekTo(ACT_RANGES[i].s)`，`?ui=1` 下那排按钮就是 `ACT_RANGES` 渲染出来的；
-- **底部时间戳条可以直接点**：画面里那条是烧进视频的（渲染成片里也有，静态信息），网页版在**同一位置**叠了一层透明按钮，点哪个排序就 seek 到那一段的起始帧——两者位置/宽度都按 1920×1080 的同一套比例算，严丝合缝；
+- **底部时间戳条可以直接点**：画面里那条是烧进视频的（渲染成片里也有，静态信息），网页版在**同一位置**叠了一层透明按钮（实测对齐误差 < 0.01%），点哪个排序就跳到那一段——多跳 0.6 秒，避免暂停时停在转场模糊帧上；
 - **状态回读**：播放器用事件往外推状态（`play` / `pause` / `frameupdate`）——
   ⚠️ `onFrameUpdate` 这类 prop 在新版 `@remotion/player` 里已经没有，要用 `addEventListener('frameupdate', …)`；
 - **字体**：`FontFace` 异步加载，不阻塞首屏；渲染端则用 `delayRender/continueRender` 等字体就绪。
