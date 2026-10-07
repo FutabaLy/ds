@@ -1,16 +1,16 @@
-name: 部署网页实时版到 GitHub Pages
+name: 部署「数据结构 · 排序 MV」网页实时版到 GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
-      - 'src/**'
-      - 'web/**'
-      - 'web-public/**'
-      - 'index.html'
-      - 'vite.config.mts'
-      - 'package.json'
-      - 'package-lock.json'
+      - 'projects/sorting-mv/src/**'
+      - 'projects/sorting-mv/web/**'
+      - 'projects/sorting-mv/web-public/**'
+      - 'projects/sorting-mv/index.html'
+      - 'projects/sorting-mv/vite.config.mts'
+      - 'projects/sorting-mv/package.json'
+      - 'projects/sorting-mv/package-lock.json'
       - '.github/workflows/deploy-web.yml'
   workflow_dispatch:
 
@@ -19,7 +19,6 @@ permissions:
   pages: write
   id-token: write
 
-# 同一时间只跑一个部署，新的推送取消排队中的旧任务
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -27,6 +26,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/sorting-mv
     steps:
       - uses: actions/checkout@v7
 
@@ -34,6 +36,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: projects/sorting-mv/package-lock.json
 
       - name: 安装依赖
         run: npm ci
@@ -51,7 +54,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: dist
+          path: projects/sorting-mv/dist
 
   deploy:
     needs: build

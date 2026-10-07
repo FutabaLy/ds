@@ -1,0 +1,8 @@
+node_modules/
+dist/
+out/
+*.log
+
+# 母带 / 大文件不进仓库（按需自备）
+public/*.wav
+audio/timeline.json

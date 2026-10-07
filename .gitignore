@@ -1,8 +1,4 @@
-node_modules/
-dist/
-out/
+# 各项目自己的 .gitignore 负责各自的忽略规则，这里是仓库级的兜底
+.DS_Store
+Thumbs.db
 *.log
-
-# 母带 / 大文件不进仓库（按需自备）
-public/*.wav
-audio/timeline.json
