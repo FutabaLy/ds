@@ -8,6 +8,8 @@
 |---|---|---|---|
 | [sorting-mv](projects/sorting-mv/) | **数据结构 · 排序 MV**：9 种内部排序（直接插入 / 折半插入 / 希尔 / 冒泡 / 快速 / 简单选择 / 堆 / 归并 / 基数）逐帧动画，1920×1080@60fps；底部时间戳条可直接点着跳章节 | [`mv.mp4`](projects/sorting-mv/mv.mp4)（186.005 s / 56 MB）、[docs/screenshots/](projects/sorting-mv/docs/screenshots/)、在线观看 **https://futabaly.github.io/ds/sorting-mv/** | `cd projects/sorting-mv && npm i && npm run web:dev`（预览）/ `npm run render`（出片） |
 
+| [avl-lab](projects/avl-lab/) | **AVL 旋转实验室**：四种旋转分步动画、自定义插入、平衡因子与例题 | [在线演示](https://futabaly.github.io/ds/avl-lab/) | 进入项目后运行 npm ci、npm run check、npm run web:build |
+
 ## 在线站点
 
 一个仓库只有一个 GitHub Pages 站点，所以**根地址是门户页，各项目挂在子路径**（以后加片子不会互相占位）。

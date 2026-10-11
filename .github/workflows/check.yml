@@ -15,6 +15,7 @@ jobs:
         # 加了新项目就往这里加一行（见根 README「加一个新项目」）
         project:
           - sorting-mv
+          - avl-lab
     defaults:
       run:
         working-directory: projects/${{ matrix.project }}
