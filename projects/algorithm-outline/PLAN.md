@@ -17,8 +17,14 @@
 
 下一轮从“来源清单 + 首批线性表题”开始。用户回来继续时执行；本文件本身不创建自动定时任务。
 
+## 解答结构约定
+
+每题增加暴力解法（直观基础解），包含思路、代码、时间与空间复杂度；随后分析瓶颈，再展示优化解法，并对照两者的适用条件与题目约束。暴力解不满足题目要求时明确标注，不能暗示可以拿满分；基础解已最优或两者相同时如实说明，不强行编造不同算法。
+
 ## 单题数据字段
 
-`id, year, number, score, sourceUrl, sourceCheckedAt, sourceStatus, topics, paraphrase, constraints, idea, steps, code, timeComplexity, spaceComplexity, edgeCases, pitfalls, takeaway`
+`id, year, number, score, sourceUrl, sourceCheckedAt, sourceStatus, topics, paraphrase, constraints, bruteForce, bottleneck, optimized, comparison, edgeCases, pitfalls, takeaway`
+
+`bruteForce` 与 `optimized` 分别包含 `idea, steps, code, timeComplexity, spaceComplexity, meetsConstraints`；`comparison` 说明性能变化、适用条件和正确性要点。
 
 缺少核对信息的字段使用 null 或明确的待核对状态，不猜测题号。题意整理与自编解释分开，链接原卷来源；自编变式独立标注。算法声明的数据结构、索引约定与边界必须一致。
