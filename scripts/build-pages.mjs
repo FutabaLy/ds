@@ -75,6 +75,10 @@ const html = `<!doctype html>
       linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
     background-size: auto, auto, 80px 80px, 80px 80px;
   }
+  .related { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+  .related a { color: #8ab4ff; border: 1px solid #24334f; border-radius: 8px; padding: 8px 12px; text-decoration: none; font-size: 14px; }
+  .related a:hover { border-color: #38bdf8; color: #eef3ff; }
+  .related a:focus-visible { outline: 2px solid #38bdf8; outline-offset: 3px; }
   .wrap { max-width: 1000px; margin: 0 auto; }
   h1 { font-size: 40px; margin: 0 0 10px; letter-spacing: 1px; }
   .sub { color: #9fb0cc; font-size: 16px; line-height: 1.7; margin: 0 0 36px; }
@@ -100,6 +104,10 @@ const html = `<!doctype html>
   <div class="wrap">
     <h1>${esc(cfg.siteTitle)}</h1>
     <p class="sub">${cfg.siteDesc}</p>
+    <nav class="related" aria-label="关联学习项目">
+      <a href="https://futabaly.github.io/co/">408 可视化 ↗</a>
+      <a href="https://futabaly.github.io/network/">计算机网络 CN ↗</a>
+    </nav>
     <div class="grid">${cards}
     </div>
     <footer>
