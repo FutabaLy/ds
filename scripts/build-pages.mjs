@@ -105,9 +105,9 @@ const html = `<!doctype html>
     <h1>${esc(cfg.siteTitle)}</h1>
     <p class="sub">${cfg.siteDesc}</p>
     <nav class="related" aria-label="关联学习项目">
-      <a href="https://futabaly.github.io/os/">操作系统 OS ↗</a>
-      <a href="https://futabaly.github.io/co/">408 可视化 ↗</a>
-      <a href="https://futabaly.github.io/network/">计算机网络 CN ↗</a>
+      <a href="https://futabaly.github.io/os/">OS ↗</a>
+      <a href="https://futabaly.github.io/co/">CO ↗</a>
+      <a href="https://futabaly.github.io/cn/">CN ↗</a>
     </nav>
     <div class="grid">${cards}
     </div>

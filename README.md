@@ -1,11 +1,11 @@
-# ds
+# DS
 
-数据结构相关的教学 / 可视化项目合集（monorepo，与 [network](https://github.com/FutabaLy/network) 仓库同构）。每个项目独立放在 `projects/<名字>/`，各有自己的 `package.json`、README 和校验脚本。
+数据结构相关的教学 / 可视化项目合集（monorepo，与 [CN](https://github.com/FutabaLy/cn) 仓库同构）。每个项目独立放在 `projects/<名字>/`，各有自己的 `package.json`、README 和校验脚本。
 
 ## 关联项目
 
-- [408 可视化](https://futabaly.github.io/co/)：408 课程交互式实验合集。
-- [计算机网络 CN](https://futabaly.github.io/network/)：时延、带宽与信道利用率等教学可视化。
+- [CO](https://futabaly.github.io/co/)：408 课程交互式实验合集。
+- [CN](https://futabaly.github.io/cn/)：时延、带宽与信道利用率等教学可视化。
 
 ## 项目索引
 
