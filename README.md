@@ -7,6 +7,10 @@
 - [CO](https://futabaly.github.io/co/)：408 课程交互式实验合集。
 - [CN](https://futabaly.github.io/cn/)：时延、带宽与信道利用率等教学可视化。
 
+## 算法题学习路线
+
+[打开算法题大纲](https://futabaly.github.io/ds/algorithm-outline/)：8 个专题，知识点、解题过程、历年真题、公式速查。当前为大纲版，暂未收录真题。[分批补充计划](projects/algorithm-outline/PLAN.md)。
+
 ## 项目索引
 
 | 项目 | 内容 | 产物 | 怎么看 / 怎么跑 |
