@@ -3,7 +3,7 @@ import {readFileSync,mkdirSync,rmSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {questions} from './questions.js';
 import {topics} from './topics.js';
-assert.equal(questions.length,4);
+assert.deepEqual(questions.map(q=>q.id),['2009-42','2010-42','2011-42','2012-42','2013-41','2015-41','2018-41','2019-41']);
 assert.equal(new Set(questions.map(q=>q.id)).size,questions.length);
 for(const q of questions){
  assert(q.topics.every(id=>topics.some(t=>t.id===id)));
@@ -12,7 +12,7 @@ for(const q of questions){
  assert(q.steps.length>=3&&q.cases.length>=3&&q.proof&&q.takeaway);
 }
 await import('./build.mjs');
-const html=readFileSync('dist/index.html','utf8');assert(html.includes('id="question-count">4'));
+const html=readFileSync('dist/index.html','utf8');assert(html.includes(`id="question-count">${questions.length}`));
 mkdirSync('.check',{recursive:true});
 const exe=process.platform==='win32'?'.check/algorithms.exe':'.check/algorithms';
 try{

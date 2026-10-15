@@ -189,6 +189,69 @@ export const questions = [
     "takeaway": "第 k 小问题 → 让左半边恰好有 k 个元素，再验证交叉边界。"
   },
   {
+    "id": "2012-42",
+    "year": 2012,
+    "number": 42,
+    "title": "两链表的共同后缀",
+    "topics": [
+      "linked"
+    ],
+    "source": "https://www.csgraduates.com/study_methods/408quiz/2012/",
+    "checked": "2026-10-15",
+    "stem": "两个带头结点的单链表存放单词，共同后缀可以共享同一串结点。找到第一个共享结点的地址；没有共享结点则返回空指针。",
+    "constraints": [
+      "输入为无环单链表，头结点不参与比较。",
+      "共同后缀指共享存储，不是两段内容相同但地址不同的字符串。",
+      "为复用数据结构，代码统一用 Node.link 表示原题 next；data 类型不影响算法，字符可存入 int。"
+    ],
+    "brute": {
+      "idea": "暴力解：枚举第一条链表的每个有效结点，再扫描第二条链表判断是否存在相同地址；第一次命中就是共同后缀起点。",
+      "time": "O(mn)，m、n 为两表有效长度",
+      "space": "O(1)",
+      "condition": "功能正确且不修改链表，但重复扫描，不符合尽可能高效的时间目标。",
+      "code": "const Node* suffixBrute(const Node* h1, const Node* h2) {\n    if (!h1 || !h2) return nullptr;\n    for (const Node* p = h1->link; p; p = p->link)\n        for (const Node* q = h2->link; q; q = q->link)\n            if (p == q) return p;\n    return nullptr;\n}"
+    },
+    "bottleneck": "两条链表从共享结点开始的尾部完全重合。先消除长度差，使两个指针距表尾一样远，就不必反复比较每一对结点。",
+    "optimized": {
+      "idea": "分别计数 m、n；较长表先走长度差步，然后同步移动，直到地址相同。若无共同后缀，两指针最终同时到空。",
+      "time": "O(m+n)",
+      "space": "O(1)",
+      "condition": "不改数据或连接，只需常数个计数器与指针。",
+      "code": "const Node* suffixAligned(const Node* h1, const Node* h2) {\n    if (!h1 || !h2) return nullptr;\n    int m = 0, n = 0;\n    for (const Node* p = h1->link; p; p = p->link) ++m;\n    for (const Node* q = h2->link; q; q = q->link) ++n;\n    const Node* p = h1->link;\n    const Node* q = h2->link;\n    while (m > n) { p = p->link; --m; }\n    while (n > m) { q = q->link; --n; }\n    while (p != q) {\n        p = p->link;\n        q = q->link;\n    }\n    return p;\n}"
+    },
+    "proof": "对齐后两指针剩余路径长度相同，之后同步移动保持该性质。共享尾段的每个位置距表尾长度唯一，因此必在首个共享结点相遇；不共享时一起到空。",
+    "steps": [
+      "自编示例：表一 a→b→c→S→T，表二 x→S→T；S、T 是同一批结点。",
+      "长度分别为 5、3，表一先走 2 步；p=c，q=x。",
+      "同时走一步，p 和 q 都指向 S；返回 S 的地址。",
+      "若两个值同为 S 的结点地址不同，不能判定相交。"
+    ],
+    "cases": [
+      [
+        "长度 5、3，共享最后两结点",
+        "返回共同尾段首结点"
+      ],
+      [
+        "两表值相同但所有结点独立",
+        "nullptr"
+      ],
+      [
+        "两个表头指向同一首元结点",
+        "返回该首元结点"
+      ],
+      [
+        "一表为空",
+        "nullptr"
+      ]
+    ],
+    "pitfalls": [
+      "比较 p==q，而不是 p->data==q->data。",
+      "先跳过头结点，否则同一表头输入可能错误返回头结点。",
+      "本算法的终止性依赖无环链表条件。"
+    ],
+    "takeaway": "共享尾段 → 先对齐剩余长度，再同步按地址比较。"
+  },
+  {
     "id": "2013-41",
     "year": 2013,
     "number": 41,
@@ -250,5 +313,196 @@ export const questions = [
       "候选阶段结束后必须重新计数。"
     ],
     "takeaway": "超过一半 → 异值抵消筛候选，再验证。"
+  },
+  {
+    "id": "2015-41",
+    "year": 2015,
+    "number": 41,
+    "title": "按绝对值去重",
+    "topics": [
+      "linked"
+    ],
+    "source": "https://www.csgraduates.com/study_methods/408quiz/2015/",
+    "checked": "2026-10-15",
+    "stem": "链表保存 m 个整数，且每个值的绝对值不超过 n。对绝对值相同的结点，只保留第一次出现的结点，其余删除，保留者顺序不变。",
+    "constraints": [
+      "n 为正整数，|data|≤n；0 也属于合法值。",
+      "代码用带头结点的 Node.link；结点由 new 分配，删除时配对使用 delete。",
+      "不支持把栈上或共享所有权的结点传入这组删除函数。"
+    ],
+    "brute": {
+      "idea": "暴力解：从每个保留结点向后扫描，删除所有绝对值相同的结点；随后处理下一个保留结点。",
+      "time": "O(m²)",
+      "space": "O(1)",
+      "condition": "结果正确并原地去重，但重复检查多，适合作为基础方案。",
+      "code": "void dedupAbsBrute(Node* head) {\n    if (!head) return;\n    for (Node* p = head->link; p; p = p->link) {\n        Node* prev = p;\n        while (prev->link) {\n            Node* cur = prev->link;\n            if (std::abs(static_cast<long long>(p->data)) ==\n                std::abs(static_cast<long long>(cur->data))) {\n                prev->link = cur->link;\n                delete cur;\n            } else prev = cur;\n        }\n    }\n}"
+    },
+    "bottleneck": "数值范围已经给定，可用绝对值直接索引一张出现标记表，避免为每个结点重新扫描后续链表。",
+    "optimized": {
+      "idea": "分配并清零 n+1 个标记；一次扫描链表，首次出现则保留并标记，否则断开并释放结点。删除后前驱不移动。",
+      "time": "O(m+n)：扫描 O(m)，初始化标记 O(n)",
+      "space": "O(n)",
+      "condition": "以空间换时间；若只计扫描阶段为 O(m)。当 n 很大而 m 很小时，初始化成本不能忽略。",
+      "code": "void dedupAbsMarked(Node* head, int n) {\n    if (!head || n < 0) return;\n    std::vector<unsigned char> seen(static_cast<std::size_t>(n) + 1, 0);\n    Node* prev = head;\n    while (prev->link) {\n        Node* cur = prev->link;\n        std::size_t key = static_cast<std::size_t>(\n            std::abs(static_cast<long long>(cur->data)));\n        // Precondition: key <= n.\n        if (seen[key]) {\n            prev->link = cur->link;\n            delete cur;\n        } else {\n            seen[key] = 1;\n            prev = cur;\n        }\n    }\n}"
+    },
+    "proof": "扫描到 cur 时，seen 恰记录此前已保留结点的绝对值。标记存在则 cur 必为重复，删除不改变此前顺序；标记不存在则保留 cur，保证每个绝对值只保留首次出现者。",
+    "steps": [
+      "自编示例：head→2→−1→1→−2→0→0，n=2；标记全为 0。",
+      "保留 2 与 −1，标记 seen[2]=1、seen[1]=1。",
+      "遇到 1、−2，绝对值已标记，逐个断开并释放；删除后 prev 不前进。",
+      "保留第一个 0，删除第二个 0；结果 2→−1→0。"
+    ],
+    "cases": [
+      [
+        "2→−1→1→−2→0→0，n=2",
+        "2→−1→0"
+      ],
+      [
+        "−3→3→−3，n=3",
+        "保留第一个 −3 结点"
+      ],
+      [
+        "0→0，n=1",
+        "保留第一个 0"
+      ],
+      [
+        "空链表",
+        "仍为空"
+      ]
+    ],
+    "pitfalls": [
+      "标记下标必须用绝对值，不能直接用负数 data。",
+      "分配 n+1 个位置以覆盖 0 与 n。",
+      "删除后不移动 prev，避免跳过连续重复。",
+      "delete 后不能再读取 cur->link，必须先保存连接。"
+    ],
+    "takeaway": "有界值域去重 → 用绝对值作索引，标记首次出现。"
+  },
+  {
+    "id": "2018-41",
+    "year": 2018,
+    "number": 41,
+    "title": "缺失的最小正整数",
+    "topics": [
+      "linear"
+    ],
+    "source": "https://www.csgraduates.com/study_methods/408quiz/2018/",
+    "checked": "2026-10-15",
+    "stem": "在含 n 个整数的数组中，找出没有出现的最小正整数。输入可能含负数、零、重复项或大于 n 的值。",
+    "constraints": [
+      "原题 n≥1，目标是时间尽可能高效。",
+      "答案必在 [1,n+1]；下面的函数返回答案，不修改原数组。",
+      "空数组作为扩展返回 1；n+1 要能用 int 表示。"
+    ],
+    "brute": {
+      "idea": "暴力解：候选从 1 到 n+1，每次扫描原数组；第一个找不到的候选就是答案。",
+      "time": "O(n²)",
+      "space": "O(1)",
+      "condition": "功能正确、不修改输入，但不同候选反复扫描数组。",
+      "code": "int missingBrute(const int a[], int n) {\n    for (int candidate = 1; candidate <= n; ++candidate) {\n        bool found = false;\n        for (int i = 0; i < n; ++i) {\n            if (a[i] == candidate) { found = true; break; }\n        }\n        if (!found) return candidate;\n    }\n    return n + 1;\n}"
+    },
+    "bottleneck": "候选范围虽然无界，但 n 个元素最多覆盖前 n 个正整数。只标记 1…n，即可一次扫描数据后直接找到第一个缺口。",
+    "optimized": {
+      "idea": "创建长度 n 的标记表，把范围内的 a[i] 映射到下标 a[i]−1；然后从左往右找首个未标记位置，若全标记则返回 n+1。",
+      "time": "O(n)",
+      "space": "O(n)",
+      "condition": "线性时间且不修改输入。原题没有要求 O(1) 空间；原地置换可作为以后扩展方案。",
+      "code": "int missingMarked(const int a[], int n) {\n    std::vector<unsigned char> seen(n, 0);\n    for (int i = 0; i < n; ++i) {\n        if (a[i] >= 1 && a[i] <= n) seen[a[i] - 1] = 1;\n    }\n    for (int i = 0; i < n; ++i) if (!seen[i]) return i + 1;\n    return n + 1;\n}"
+    },
+    "proof": "n 个位置不可能同时容纳 1 到 n+1 全部不同的正整数。范围外数不影响这一候选区间；标记后按递增顺序找到的首个缺口就是最小缺失正整数。",
+    "steps": [
+      "自编示例：a=[3,1,1,−2,9]，n=5；seen 对应 1…5，初始全 0。",
+      "扫描 3 和 1，seen=[1,0,1,0,0]；重复的 1 不改变标记。",
+      "−2 和 9 不在 [1,5] 内，跳过，不能拿来作下标。",
+      "从左扫描，seen[1]=0，所以答案为 1+1=2。"
+    ],
+    "cases": [
+      [
+        "[−5,0,−1]",
+        "1"
+      ],
+      [
+        "[1,2,3]",
+        "4"
+      ],
+      [
+        "[3,1,1,−2,9]",
+        "2"
+      ],
+      [
+        "[INT_MAX,1]",
+        "2，不越界"
+      ]
+    ],
+    "pitfalls": [
+      "必须同时检查 a[i]≥1 和 a[i]≤n，只有下界检查会越界。",
+      "最小正整数不包含 0。",
+      "全部标记时答案是 n+1，而不是 n。"
+    ],
+    "takeaway": "n 个元素 → 最小缺失正整数只需检查 1…n+1。"
+  },
+  {
+    "id": "2019-41",
+    "year": 2019,
+    "number": 41,
+    "title": "链表首尾交替重排",
+    "topics": [
+      "linked"
+    ],
+    "source": "https://www.csgraduates.com/study_methods/408quiz/2019/",
+    "checked": "2026-10-15",
+    "stem": "将带头结点的链表 a1,a2,…,an 改为 a1,an,a2,a(n−1),…，要求额外空间 O(1)，时间尽可能高效。",
+    "constraints": [
+      "重排现有结点，不能只交换数据伪装成重连。",
+      "输入链表无环；统一用 Node.link 对应原题 next。",
+      "保留全部结点与其数据，不新增结点，不释放结点。"
+    ],
+    "brute": {
+      "idea": "暴力解：处理当前首结点时，从它后面扫描找到剩余尾结点，摘下并插入当前结点之后；再处理下一对。",
+      "time": "O(n²)",
+      "space": "O(1)",
+      "condition": "满足常数空间并正确重排，但每轮寻找尾结点导致重复扫描。",
+      "code": "void reorderBrute(Node* head) {\n    if (!head) return;\n    Node* cur = head->link;\n    while (cur && cur->link) {\n        Node* prev = cur;\n        while (prev->link->link) prev = prev->link;\n        Node* tail = prev->link;\n        if (tail == cur->link) break;\n        prev->link = nullptr;\n        tail->link = cur->link;\n        cur->link = tail;\n        cur = tail->link;\n    }\n}"
+    },
+    "bottleneck": "单链表只能向后走，反复找尾巴很慢。先把后半段逆置，原来的末尾就变成后半段的开头，之后可直接交替取结点。",
+    "optimized": {
+      "idea": "快慢指针找到前半段末结点，断开两段；逆置后半段；将逆置后的后半段逐个穿插进前半段。奇数长度时前半段多一个结点。",
+      "time": "O(n)",
+      "space": "O(1)",
+      "condition": "三段线性处理，全程只使用常数个指针，保留结点身份与数据。",
+      "code": "void reorderLinear(Node* head) {\n    if (!head || !head->link || !head->link->link) return;\n    Node* slow = head->link;\n    Node* fast = head->link;\n    while (fast->link && fast->link->link) {\n        slow = slow->link;\n        fast = fast->link->link;\n    }\n    Node* cur = slow->link;\n    slow->link = nullptr;\n    Node* second = nullptr;\n    while (cur) {\n        Node* next = cur->link;\n        cur->link = second;\n        second = cur;\n        cur = next;\n    }\n    Node* first = head->link;\n    while (second) {\n        Node* nextFirst = first->link;\n        Node* nextSecond = second->link;\n        first->link = second;\n        second->link = nextFirst;\n        first = nextFirst;\n        second = nextSecond;\n    }\n}"
+    },
+    "proof": "分割后前半段按 a1,a2,… 排列，逆置后半段按 an,a(n−1),… 排列。每轮交替接入一个结点，恰好构成目标序列；前段长度不少于后段，后段用完时剩余的至多一个中点自然留在末尾。",
+    "steps": [
+      "自编示例：1→2→3→4→5，slow 最终停在 3。",
+      "断开为 1→2→3 和 4→5，必须先令 3.link=NULL。",
+      "后半段逆置成 5→4。",
+      "依次穿插：1→5→2→4→3；尾结点 3.link=NULL。"
+    ],
+    "cases": [
+      [
+        "1→2→3→4",
+        "1→4→2→3"
+      ],
+      [
+        "1→2→3→4→5",
+        "1→5→2→4→3"
+      ],
+      [
+        "空表或单结点",
+        "不变"
+      ],
+      [
+        "两结点",
+        "顺序不变，结点身份保持"
+      ]
+    ],
+    "pitfalls": [
+      "逆置前先断开两段，避免拼接后成环。",
+      "改 link 前保存两段的后继，否则会丢失剩余结点。",
+      "用地址检查结点顺序，不能只看值；重复值会掩盖错误。",
+      "递归逆置会引入 O(n) 调用栈，不符合常数额外空间要求。"
+    ],
+    "takeaway": "首尾交替 → 找中点、断开、逆置后半、交叉合并。"
   }
 ];

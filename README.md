@@ -9,7 +9,7 @@
 
 ## 算法题学习路线
 
-[打开算法题大纲](https://futabaly.github.io/ds/algorithm-outline/)：8 个专题，知识点、解题过程、历年真题、公式速查。已收录首批 4 道真题，每题提供暴力解、优化解与分步示例。[分批补充计划](projects/algorithm-outline/PLAN.md)。
+[打开算法题大纲](https://futabaly.github.io/ds/algorithm-outline/)：8 个专题，知识点、解题过程、历年真题、公式速查。已收录8 道真题，每题提供暴力解、优化解与分步示例。[分批补充计划](projects/algorithm-outline/PLAN.md)。
 
 ## 项目索引
 

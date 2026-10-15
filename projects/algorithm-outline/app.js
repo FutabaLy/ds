@@ -16,6 +16,6 @@ if(tab==='questions') html=questionView(selected,questionId);
 if(tab==='summary') html=`<h3>先记结论，也记条件</h3><dl>${t.summary.map(([a,b])=>`<dt>${escape(a)}</dt><dd>${escape(b)}</dd>`).join('')}</dl><div class="callout">速查用来检查推导；答题时仍需结合题目说明算法思想和复杂度依据。</div>`;
 $('#panel').innerHTML=html; if(tab==='questions') bindWalk(selected,questionId); }
 $('#search').addEventListener('input',renderList);
-$('#topic-list').addEventListener('click',e=>{const b=e.target.closest('[data-topic]'); if(!b)return; selected=b.dataset.topic; navigate(); if(matchMedia('(max-width:800px)').matches) $('#detail').scrollIntoView({block:'start'});});
+$('#topic-list').addEventListener('click',e=>{const b=e.target.closest('[data-topic]'); if(!b)return; selected=b.dataset.topic; questionId=''; navigate(); if(matchMedia('(max-width:800px)').matches) $('#detail').scrollIntoView({block:'start'});});
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]'); if(!b)return; tab=b.dataset.tab; navigate();});
 window.addEventListener('hashchange',readHash);readHash();
