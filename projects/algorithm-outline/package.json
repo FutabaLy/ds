@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check app.js && node --check topics.js && node --check build.mjs",
+    "check": "node --check app.js && node --check question-view.js && node check.mjs",
     "web:build": "node build.mjs"
   }
 }
