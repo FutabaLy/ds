@@ -5,7 +5,7 @@ import {commonDeclarations, standardAnswer} from './standard-answer.js';
 mkdirSync('dist/answers',{recursive:true});
 for(const file of ['style.css','app.js','topics.js','questions.js','question-view.js','standard-answer.js']) copyFileSync(file,`dist/${file}`);
 writeFileSync('dist/index.html',readFileSync('index.html','utf8').replace('{{QUESTION_COUNT}}',String(questions.length)));
-writeFileSync('dist/solutions.h','#ifndef DS_SOLUTIONS_H\n#define DS_SOLUTIONS_H\n'+commonDeclarations+'\n'+questions.map(q=>`\n// ${q.id}\n${q.brute.code}\n${q.optimized.code}\n`).join('')+'\n#endif\n');
+writeFileSync('dist/solutions.h','#ifndef DS_SOLUTIONS_H\n#define DS_SOLUTIONS_H\n'+commonDeclarations+'\n'+questions.map(q=>`\n// ${q.id}\n` + [q.declarations,q.brute.code,q.optimized.code].filter(Boolean).join('\n\n')+'\n').join('')+'\n#endif\n');
 for(const q of questions) writeFileSync(`dist/answers/${q.id}.c`,standardAnswer(q).code);
 const assets=['index.html','style.css','app.js','topics.js','questions.js','question-view.js','standard-answer.js'];
 const version=createHash('sha256').update(assets.map(file=>readFileSync(file,'utf8')).join('')).digest('hex').slice(0,12);

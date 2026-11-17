@@ -33,6 +33,12 @@ const examples = {
     '2013-41': [String.raw`    int a[] = {2, 1, 2, 2, 0};
     int n = (int)(sizeof a / sizeof a[0]);
     printf("%d\n", majorityVote(a, n));`, '2'],
+    '2014-41': [String.raw`    WplNode left = {2, NULL, NULL};
+    WplNode leaf1 = {3, NULL, NULL};
+    WplNode leaf2 = {5, NULL, NULL};
+    WplNode right = {0, &leaf1, &leaf2};
+    WplNode root = {0, &left, &right};
+    printf("%lld\n", treeWpl(&root));`, '18'],
     '2015-41': [String.raw`    const int a[] = {3, -3, 2, -2, 1};
     Node head = {0, NULL};
     Node *tail = &head;
@@ -65,6 +71,18 @@ const examples = {
     reorderLinear(&a[0]);
     for (Node *p = a[0].link; p; p = p->link)
         printf("%d%c", p->data, p->link ? ' ' : '\n');`, '1 4 2 3'],
+    '2019-42': [String.raw`    ReuseQueue queue = {NULL, NULL, NULL};
+    int first, second, third;
+    // 先出队 10，再入队 30，后一操作复用 10 的结点。
+    bool ok = queueReusePush(&queue, 10)
+           && queueReusePush(&queue, 20)
+           && queueReusePop(&queue, &first)
+           && queueReusePush(&queue, 30)
+           && queueReusePop(&queue, &second)
+           && queueReusePop(&queue, &third);
+    if (ok) printf("%d %d %d\n", first, second, third);
+    queueReuseDestroy(&queue);
+    return ok ? 0 : 1;`, '10 20 30'],
     '2020-41': [String.raw`    int a[] = {1, 8}, b[] = {4, 9}, c[] = {7, 10};
     printf("%lld\n", tripleMin(a, 2, b, 2, c, 2));`, '4'],
     '2021-41': [String.raw`    const int edge[] = {
@@ -85,7 +103,7 @@ const examples = {
 };
 
 const supportingAnswers = new Set(['2015-41', '2018-41']);
-const returnsFromMain = new Set(['2009-42', '2015-41']);
+const returnsFromMain = new Set(['2009-42', '2015-41', '2019-42']);
 
 export function standardAnswer(question) {
     const [example, expected] = examples[question.id];
@@ -95,7 +113,7 @@ export function standardAnswer(question) {
         ? '\n\n/* 标记表分配失败时使用的基础解。 */\n' + question.brute.code : '';
     const result = returnsFromMain.has(question.id) ? '' : '\n    return 0;';
     const code = [
-        declarations + fallback,
+        [declarations, question.declarations].filter(Boolean).join('\n\n') + fallback,
         '/* 解题函数：' + question.optimized.idea + ' */\n' + question.optimized.code,
         '/* 独立运行示例：在 main 中构造输入并输出结果。 */\nint main(void) {\n'
             + example + result + '\n}\n'

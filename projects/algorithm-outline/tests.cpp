@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <new>
+#include <deque>
 
 static std::ostringstream printed;
 static int captureOutput(const char*, int value) {
@@ -118,7 +119,58 @@ void testThirdBatch() {
     assert(!elExists(star, 4));
 }
 
+void testQueueAndWpl() {
+    ReuseQueue q{};
+    std::deque<int> reference;
+    int out = 0;
+    assert(!queueReusePop(&q, &out));
+    assert(queueReusePush(&q, 10));
+    auto* first = q.front;
+    assert(queueReusePop(&q, &out) && out == 10);
+    assert(q.front == nullptr && q.rear == nullptr && q.spare == first);
+    assert(queueReusePush(&q, 20) && q.front == first);
+    queueReuseDestroy(&q);
+
+    std::mt19937 rng(201942);
+    std::size_t peak = 0;
+    for (int i = 0; i < 500; ++i) {
+        if (rng() % 2 == 0) {
+            assert(queueReusePush(&q, i));
+            reference.push_back(i);
+            peak = std::max(peak, reference.size());
+        } else if (reference.empty()) {
+            assert(!queueReusePop(&q, &out));
+        } else {
+            assert(queueReusePop(&q, &out) && out == reference.front());
+            reference.pop_front();
+        }
+        std::size_t allocated = 0;
+        for (auto* chain : {q.front, q.spare}) {
+            for (auto* node = chain; node; node = node->link) assert(++allocated <= peak);
+        }
+        assert(allocated == peak);
+    }
+    queueReuseDestroy(&q);
+    assert(!q.front && !q.rear && !q.spare);
+
+    assert(treeWpl(nullptr) == 0);
+    WplNode leaf{9, nullptr, nullptr};
+    assert(treeWpl(&leaf) == 0);
+    for (int n = 1; n <= 70; ++n) {
+        std::vector<WplNode> nodes(n);
+        for (int i = 0; i < n; ++i) {
+            nodes[i] = {static_cast<int>(rng() % 100),
+                        2 * i + 1 < n ? &nodes[2 * i + 1] : nullptr,
+                        2 * i + 2 < n ? &nodes[2 * i + 2] : nullptr};
+        }
+        const auto expected = wplByLevel(nodes.data());
+        assert(treeWpl(nodes.data()) == expected);
+        assert(treeWpl(nodes.data()) == expected);
+    }
+}
+
 int main() {
+    testQueueAndWpl();
     testThirdBatch();
     testSecondBatch();
     std::mt19937 rng(408);

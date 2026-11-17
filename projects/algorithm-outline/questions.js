@@ -315,6 +315,64 @@ export const questions = [
     "takeaway": "超过一半 → 异值抵消筛候选，再验证。"
   },
   {
+    "id": "2014-41",
+    "year": 2014,
+    "number": 41,
+    "title": "二叉树的带权路径长度（WPL）",
+    "topics": [
+      "tree"
+    ],
+    "source": "https://www.csgraduates.com/study_methods/408quiz/2014/",
+    "checked": "2026-11-17",
+    "stem": "给定用二叉链表存储的树。每个叶结点的路径长度按根到叶的边数计算，求所有叶结点的「权值 × 路径长度」之和。",
+    "constraints": [
+      "原题的叶结点权值非负。",
+      "根结点深度为 0，只有叶结点参与累加。代码也支持空树，返回 0。"
+    ],
+    "declarations": "typedef struct WplNode {\n    int weight;\n    struct WplNode *left, *right;\n} WplNode;",
+    "brute": {
+      "idea": "先求树高，再逐层找叶结点。每层都从根重新遍历，用该层深度乘叶结点权值之和。",
+      "time": "O(nh)",
+      "space": "O(h)",
+      "condition": "功能正确；O(nh) 是上界，退化链可以达到该量级。",
+      "code": "static int wplHeight(const WplNode *node) {\n    if (!node) return 0;\n    int left = wplHeight(node->left);\n    int right = wplHeight(node->right);\n    return 1 + (left > right ? left : right);\n}\nstatic long long wplWeightAt(const WplNode *node, int depth) {\n    if (!node) return 0;\n    if (depth == 0)\n        return !node->left && !node->right ? node->weight : 0;\n    return wplWeightAt(node->left, depth - 1)\n         + wplWeightAt(node->right, depth - 1);\n}\nlong long wplByLevel(const WplNode *root) {\n    int height = wplHeight(root);\n    long long total = 0;\n    for (int depth = 0; depth < height; ++depth)\n        total += depth * wplWeightAt(root, depth);\n    return total;\n}"
+    },
+    "bottleneck": "按层查找会多次访问相同的祖先。递归时直接携带当前深度，可以在首次到达叶结点时完成贡献计算。",
+    "optimized": {
+      "idea": "从根以深度 0 出发。空结点贡献为 0，叶结点返回自身贡献，内部结点返回两棵子树贡献的和。",
+      "time": "O(n)",
+      "space": "O(h)",
+      "condition": "每个结点访问一次；递归栈深度为树高。",
+      "code": "static long long wplAtDepth(const WplNode *node, int depth) {\n    if (!node) return 0;\n    if (!node->left && !node->right)\n        return (long long)node->weight * depth;  // Only leaves contribute.\n\n    return wplAtDepth(node->left, depth + 1)\n         + wplAtDepth(node->right, depth + 1);\n}\nlong long treeWpl(const WplNode *root) {\n    return wplAtDepth(root, 0);\n}"
+    },
+    "proof": "参数 depth 始终等于根到当前结点的边数。每个叶结点只在其所在的递归分支贡献一次，左右子树没有共享叶结点，因此相加得到整棵树的 WPL。",
+    "steps": [
+      "根的左孩子是权值 2 的叶结点，右孩子的两个叶结点权值是 3 和 5。",
+      "左边只有一条边，贡献为 2×1；右边各有两条边，分别贡献 3×2、5×2。",
+      "合并两个子树的结果，得到 18。"
+    ],
+    "cases": [
+      [
+        "空树",
+        "0"
+      ],
+      [
+        "只有一个权为 9 的根",
+        "0，深度为 0"
+      ],
+      [
+        "深度为 3 的唯一叶结点权为 4",
+        "12"
+      ]
+    ],
+    "pitfalls": [
+      "不要把根的深度写成 1。",
+      "非叶结点的权值不计入。",
+      "返回子树结果再相加，重复调用函数也不会累积上一次的结果。"
+    ],
+    "takeaway": "递归携带深度，叶结点乘权，内部结点只相加。"
+  },
+  {
     "id": "2015-41",
     "year": 2015,
     "number": 41,
@@ -504,6 +562,65 @@ export const questions = [
       "递归逆置会引入 O(n) 调用栈，不符合常数额外空间要求。"
     ],
     "takeaway": "首尾交替 → 找中点、断开、逆置后半、交叉合并。"
+  },
+  {
+    "id": "2019-42",
+    "year": 2019,
+    "number": 42,
+    "title": "出队空间可复用的链式队列",
+    "topics": [
+      "stack"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2019/preview",
+    "checked": "2026-11-17",
+    "stem": "设计一个初始为空的队列。入队时可以申请新空间，出队位置要留给后续入队复用。队列占用的空间只增不减，每次入队和出队都要求 O(1)。",
+    "constraints": [
+      "按 FIFO 顺序访问元素。",
+      "以下解法用三根指针管理活动链和备用链。复杂度按通常的数据结构模型计算，一次结点分配计为 O(1)。"
+    ],
+    "declarations": "typedef struct QueueNode {\n    int data;\n    struct QueueNode *link;\n} QueueNode;\n\ntypedef struct ReuseQueue {\n    QueueNode *front;  // First active node.\n    QueueNode *rear;   // Last active node.\n    QueueNode *spare;  // First reusable node.\n} ReuseQueue;",
+    "brute": {
+      "idea": "普通链式队列入队时申请新结点，出队时释放结点。用队首、队尾指针保持 FIFO。",
+      "time": "O(1) 每次",
+      "space": "O(n) 队列存储",
+      "condition": "功能是 FIFO，但出队会归还空间，违反题目的只增不减要求。",
+      "code": "bool queuePlainPush(ReuseQueue *q, int value) {\n    QueueNode *node = (QueueNode *)malloc(sizeof *node);\n    if (!node) return false;\n    node->data = value;\n    node->link = NULL;\n    if (q->rear) q->rear->link = node;\n    else q->front = node;\n    q->rear = node;\n    return true;\n}\nbool queuePlainPop(ReuseQueue *q, int *out) {\n    QueueNode *node = q->front;\n    if (!node) return false;\n    *out = node->data;\n    q->front = node->link;\n    if (!q->front) q->rear = NULL;\n    free(node);\n    return true;\n}"
+    },
+    "bottleneck": "出队时活动队列不再需要这个结点，但队列仍应保留它。直接保存备用链表的首指针即可在常数时间取出空闲结点。",
+    "optimized": {
+      "idea": "出队结点挂到备用链表头。入队时优先取备用链表的首结点，无可复用结点才分配新空间。",
+      "time": "O(1) 每次",
+      "space": "O(M) 队列存储，O(1) 附加指针",
+      "condition": "M 是历史最大队长，销毁前保留相应的结点。",
+      "code": "bool queueReusePush(ReuseQueue *q, int value) {\n    QueueNode *node = q->spare;\n    if (node) {\n        q->spare = node->link;  // Take a reusable node.\n    } else {\n        node = (QueueNode *)malloc(sizeof *node);\n        if (!node) return false;\n    }\n\n    node->data = value;\n    node->link = NULL;\n    if (q->rear) q->rear->link = node;\n    else q->front = node;\n    q->rear = node;\n    return true;\n}\nbool queueReusePop(ReuseQueue *q, int *out) {\n    QueueNode *node = q->front;\n    if (!node) return false;\n\n    *out = node->data;\n    q->front = node->link;\n    if (!q->front) q->rear = NULL;  // The active queue is now empty.\n\n    node->link = q->spare;  // Keep this node for a later enqueue.\n    q->spare = node;\n    return true;\n}\nstatic void queueFreeChain(QueueNode *head) {\n    while (head) {\n        QueueNode *next = head->link;\n        free(head);\n        head = next;\n    }\n}\nvoid queueReuseDestroy(ReuseQueue *q) {\n    queueFreeChain(q->front);\n    queueFreeChain(q->spare);\n    q->front = q->rear = q->spare = NULL;\n}"
+    },
+    "proof": "活动链始终按入队顺序排列，备用链只存已经出队的结点。两条链互不相交。只有备用链为空时才新建结点，此时活动链已包含全部已分配结点，所以总分配量恰好等于历史最大队长。",
+    "steps": [
+      "入队 10、20，两次都没有备用结点，各申请一个。",
+      "出队得到 10，把原结点放入备用链，活动链只剩 20。",
+      "入队 30，复用原来存 10 的结点，活动链变成 20→30。",
+      "再出队两次依次得到 20、30，活动链空，备用链中有两个结点。"
+    ],
+    "cases": [
+      [
+        "初始状态出队",
+        "返回 false，无结点分配"
+      ],
+      [
+        "出队最后一项",
+        "front 和 rear 都为 NULL，结点移入 spare"
+      ],
+      [
+        "出空后再入队",
+        "复用 spare 的首结点，front 与 rear 指向该结点"
+      ]
+    ],
+    "pitfalls": [
+      "出队时不调用 free，只在销毁队列时释放。",
+      "复用结点后先切断旧的 link，再把结点接到队尾。",
+      "出队最后一个元素后必须清空队尾指针。"
+    ],
+    "takeaway": "活动链存队列顺序，备用链存可复用空间。"
   },
   {
     "id": "2020-41",
