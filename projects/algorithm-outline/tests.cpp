@@ -169,7 +169,77 @@ void testQueueAndWpl() {
     }
 }
 
+void testRemainingPapers() {
+    std::mt19937 rng(23408);
+    for (int n = 2; n <= 60; ++n) {
+        for (int trial = 0; trial < 25; ++trial) {
+            std::vector<int> a(n);
+            for (int& x : a) x = 1 + rng() % 45;
+            auto sorted = a, split = a;
+            const auto expected = splitSorted(sorted.data(), n);
+            assert(splitPartition(split.data(), n) == expected);
+            assert(*std::max_element(split.begin(), split.begin() + n / 2)
+                <= *std::min_element(split.begin() + n / 2, split.end()));
+            int k = 1 + rng() % n;
+            std::vector<int> candidates(k);
+            smallestByHeap(a.data(), n, candidates.data(), k);
+            assert(std::equal(candidates.begin(), candidates.end(), sorted.begin()));
+            std::vector<long long> lengths(a.begin(), a.end()), heap = lengths;
+            assert(mergeCostHeap(heap.data(), n) == mergeCostScan(lengths.data(), n));
+            std::vector<int> out(n), origin(n), rank(n);
+            rankSortStable(a.data(), n, out.data(), origin.data(), rank.data());
+            assert(out == sorted);
+            for (int i = 1; i < n; ++i)
+                if (out[i - 1] == out[i]) assert(origin[i - 1] < origin[i]);
+        }
+    }
+    PrefixNode nodes[8];
+    const char* good[] = {"0", "10", "11"};
+    const char* shortFirst[] = {"0", "01"};
+    const char* longFirst[] = {"01", "0"};
+    const char* duplicate[] = {"11", "11"};
+    const char* invalid[] = {"11", "2"};
+    assert(prefixPairwise(good, 3) && prefixBuild(good, "ABC", 3, nodes, 8));
+    assert(!prefixDecode(nodes, "1"));
+    for (const auto* bad : {shortFirst, longFirst, duplicate}) {
+        assert(!prefixPairwise(bad, 2));
+        assert(!prefixBuild(bad, "AB", 2, nodes, 8));
+    }
+    assert(!prefixBuild(invalid, "AB", 2, nodes, 8));
+    assert(!prefixBuild(good, "ABC", 3, nodes, 1));
+
+    for (int n = 1; n <= 3; ++n) {
+        for (int mask = 0; mask < (1 << (n * n)); ++mask) {
+            int edge[9] = {0}, order[3] = {0,1,2}, degree[3], ready[3];
+            for (int i = 0; i < n * n; ++i) edge[i] = (mask >> i) & 1;
+            int count = 0;
+            do {
+                bool valid = true;
+                for (int i = 0; i < n; ++i)
+                    for (int j = 0; j <= i; ++j)
+                        if (edge[order[i] * n + order[j]]) valid = false;
+                count += valid;
+            } while (std::next_permutation(order, order + n));
+            assert(topoUniqueQueue(edge, n, degree, ready) == (count == 1));
+            assert(topoUniqueScan(edge, n, degree) == (count == 1));
+        }
+    }
+
+    NearNode a{INT_MIN, nullptr, nullptr}, b{INT_MAX, nullptr, nullptr};
+    NearNode root{0, &a, &b};
+    const int probes[] = {INT_MIN, INT_MIN + 1, -1073741824, -4, 0, 4, INT_MAX - 1, INT_MAX};
+    for (int k : probes) {
+        NearResult actual = nearBst(&root, k), expected = nearAll(&root, k);
+        assert(actual.count == expected.count && actual.distance == expected.distance);
+        assert(std::equal(actual.keys, actual.keys + actual.count, expected.keys));
+    }
+    assert(nearBst(nullptr, 3).count == 0);
+    auto tie = nearBst(&root, -1073741824);
+    assert(tie.count == 2 && tie.keys[0] == INT_MIN && tie.keys[1] == 0);
+}
+
 int main() {
+    testRemainingPapers();
     testQueueAndWpl();
     testThirdBatch();
     testSecondBatch();

@@ -99,7 +99,45 @@ const examples = {
     long long res[sizeof a / sizeof a[0]];
     calMulMax(a, res, n);
     for (int i = 0; i < n; ++i)
-        printf("%lld%c", res[i], i == n - 1 ? '\n' : ' ');`, '10 9 25']
+        printf("%lld%c", res[i], i == n - 1 ? '\n' : ' ');`, '10 9 25'],
+    '2016-43': [String.raw`    int a[] = {7, 1, 4, 2, 9};
+    printf("%lld\n", splitPartition(a, 5));`, "17"],
+    '2017-41': [String.raw`    ExprNode a = {"12", NULL, NULL}, b = {"3", NULL, NULL};
+    ExprNode c = {"4", NULL, NULL}, neg = {"-", NULL, &c};
+    ExprNode sum = {"+", &a, &b}, root = {"*", &sum, &neg};
+    exprPrint(&root);
+    putchar('\n');`, "(12+3)*(-4)"],
+    '2023-41': [String.raw`    const int edge[] = {0,1,1, 0,0,0, 0,0,0};
+    int count = printKVertices(edge, "ABC", 3);
+    printf("\n%d\n", count);`, "A\n1"],
+    '2024-41': [String.raw`    const int edge[] = {0,1,0, 0,0,1, 0,0,0};
+    int degree[3], ready[3];
+    printf("%d\n", topoUniqueQueue(edge, 3, degree, ready));`, "1"],
+    '2020-42': [String.raw`    const char *codes[] = {"0", "10", "11"};
+    PrefixNode tree[6];
+    if (!prefixBuild(codes, "ABC", 3, tree, 6)) return 1;
+    if (!prefixDecode(tree, "01011")) return 1;
+    putchar('\n');`, "ABC"],
+    '2022-42': [String.raw`    int a[] = {12,4,8,10,5,2,1,9,11,3,7,6};
+    int smallest[10];
+    smallestByHeap(a, 12, smallest, 10);
+    for (int i = 0; i < 10; ++i)
+        printf("%d%c", smallest[i], i == 9 ? '\n' : ' ');`, "1 2 3 4 5 6 7 8 9 10"],
+    '2026-41': [String.raw`    NearNode right = {15, NULL, NULL}, root = {5, NULL, &right};
+    NearResult result = nearBst(&root, 10);
+    if (!result.count) return 1;
+    printf("%lld\n", result.distance);
+    for (int i = 0; i < result.count; ++i)
+        printf("%d%c", result.keys[i], i + 1 == result.count ? '\n' : ' ');`, "5\n5 15"],
+    '2012-41': [String.raw`    long long lengths[] = {10,35,40,50,60,200};
+    printf("%lld\n", mergeCostHeap(lengths, 6));`, "825"],
+    '2021-42': [String.raw`    int a[] = {25,-10,25,10,11,19};
+    int out[6], origin[6], rank[6];
+    rankSortStable(a, 6, out, origin, rank);
+    for (int i = 0; i < 6; ++i)
+        printf("%d%c", out[i], i == 5 ? '\n' : ' ');
+    for (int i = 0; i < 6; ++i)
+        printf("%d%c", origin[i], i == 5 ? '\n' : ' ');`, "-10 10 11 19 25 25\n1 3 4 5 0 2"]
 };
 
 const supportingAnswers = new Set(['2015-41', '2018-41']);

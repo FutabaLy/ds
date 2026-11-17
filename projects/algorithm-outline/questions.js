@@ -189,6 +189,64 @@ export const questions = [
     "takeaway": "第 k 小问题 → 让左半边恰好有 k 个元素，再验证交叉边界。"
   },
   {
+    "id": "2012-41",
+    "year": 2012,
+    "number": 41,
+    "title": "多路升序表的最优两两合并",
+    "topics": [
+      "sorting",
+      "tree"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2012/preview",
+    "checked": "2026-11-17",
+    "stem": "六个升序表的长度为 10、35、40、50、60、200。通过五次两两合并使最坏比较总数尽量少，并说明任意 N 个升序表的通用合并策略。",
+    "constraints": [
+      "原卷要求合并过程、比较次数和通用策略，不要求写程序。",
+      "长度均为正数；每次合并长度 a、b 的两表，最坏比较 a+b−1 次。代码只计算合并计划的比较次数，不搬运表内元素。"
+    ],
+    "declarations": "",
+    "brute": {
+      "idea": "反复扫描工作表，找出最短的两表并用合并后的长度替换它们。",
+      "time": "O(N²)",
+      "space": "O(N) 存储，可复用长度数组",
+      "condition": "策略正确，寻找最短的两个长度会多次扫表。",
+      "code": "static long long mergeScanRemove(long long a[], int *size) {\n    int min = 0;\n    for (int i = 1; i < *size; ++i)\n        if (a[i] < a[min]) min = i;\n    long long value = a[min];\n    a[min] = a[--*size];\n    return value;\n}\nlong long mergeCostScan(long long a[], int n) {\n    long long cost = 0;\n    while (n > 1) {\n        long long left = mergeScanRemove(a, &n);\n        long long right = mergeScanRemove(a, &n);\n        long long sum = left + right;\n        cost += sum - 1;\n        a[n++] = sum;\n    }\n    return cost;\n}"
+    },
+    "bottleneck": "每次只需要最短的两个表，用小根堆可以在对数时间内取出最小长度并插入合并结果。",
+    "optimized": {
+      "idea": "将所有长度放进小根堆。每次弹出两个最小长度，累加本轮最坏比较次数，把合并长度插回堆。",
+      "time": "O(N log N)",
+      "space": "O(N) 存储，可复用长度数组",
+      "condition": "输入会重排，代码复用它作为堆；长度与累计代价应可由 long long 表示。",
+      "code": "static void mergeDown(long long a[], int n, int i) {\n    while (i < n / 2) {\n        int child = 2 * i + 1;\n        if (child + 1 < n && a[child + 1] < a[child]) ++child;\n        if (a[i] <= a[child]) break;\n        long long value = a[i];\n        a[i] = a[child];\n        a[child] = value;\n        i = child;\n    }\n}\nstatic long long mergeHeapRemove(long long a[], int *n) {\n    long long value = a[0];\n    a[0] = a[--*n];\n    mergeDown(a, *n, 0);\n    return value;\n}\nlong long mergeCostHeap(long long a[], int n) {\n    for (int i = n / 2; i > 0; --i) mergeDown(a, n, i - 1);\n    long long cost = 0;\n    while (n > 1) {\n        long long left = mergeHeapRemove(a, &n);\n        long long right = mergeHeapRemove(a, &n);\n        long long sum = left + right;\n        cost += sum - 1;\n\n        // Insert the merged length and sift it upward.\n        int i = n++;\n        while (i > 0 && a[(i - 1) / 2] > sum) {\n            a[i] = a[(i - 1) / 2];\n            i = (i - 1) / 2;\n        }\n        a[i] = sum;\n    }\n    return cost;\n}"
+    },
+    "proof": "将两两合并看成二叉树，原表是叶结点，长度每经过一次合并就被计一次。总代价等于带权路径长度减去固定的 N−1。最深的一对兄弟可通过交换换成两个最小权值，再收缩为一个叶结点继续，得到哈夫曼式贪心。",
+    "steps": [
+      "10+35→45，比较至多 44 次；40+45→85，至多 84 次。",
+      "50+60→110，至多 109 次；85+110→195，至多 194 次。",
+      "195+200→395，至多 394 次；合计 825 次。"
+    ],
+    "cases": [
+      [
+        "长度 [1,2]",
+        "2 次"
+      ],
+      [
+        "长度 [1,1,1]",
+        "3 次"
+      ],
+      [
+        "原卷六表",
+        "825 次"
+      ]
+    ],
+    "pitfalls": [
+      "每次合并的比较次数要减 1，累计要减 N−1。",
+      "每轮重新比较候选长度，包括之前合并出来的表。"
+    ],
+    "takeaway": "最短的两个表先合并，得到最优合并树。"
+  },
+  {
     "id": "2012-42",
     "year": 2012,
     "number": 42,
@@ -437,6 +495,122 @@ export const questions = [
     "takeaway": "有界值域去重 → 用绝对值作索引，标记首次出现。"
   },
   {
+    "id": "2016-43",
+    "year": 2016,
+    "number": 43,
+    "title": "集合划分：个数差最小、和差最大",
+    "topics": [
+      "linear",
+      "sorting"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2016/preview",
+    "checked": "2026-11-17",
+    "stem": "把至少两个正整数分入两个互不相交的子集。先使两组个数尽量接近，再使两组元素和的差的绝对值尽量大。",
+    "constraints": [
+      "输入数组会被原地重排；前 ⌊n/2⌋ 项与剩余项是划分结果。",
+      "两组用宽整数求和；示例函数返回最大和差。"
+    ],
+    "declarations": "",
+    "brute": {
+      "idea": "用插入排序把数组排好，再从中间切开。",
+      "time": "O(n²) 最坏",
+      "space": "O(1)",
+      "condition": "排序便于验证划分，但题目只需要中间分界。",
+      "code": "long long splitSorted(int a[], int n) {\n    for (int i = 1; i < n; ++i) {\n        int value = a[i], j = i;\n        while (j > 0 && a[j - 1] > value) {\n            a[j] = a[j - 1];\n            --j;\n        }\n        a[j] = value;\n    }\n    long long diff = 0;\n    for (int i = 0; i < n; ++i)\n        diff += i < n / 2 ? -(long long)a[i] : a[i];\n    return diff;\n}"
+    },
+    "bottleneck": "段内先后顺序不影响两组总和。只定位第 ⌊n/2⌋ 小的分界即可。",
+    "optimized": {
+      "idea": "按枢轴把当前区间分成小于、等于、大于三段，仅继续处理分界所在的一侧。",
+      "time": "O(n) 平均，O(n²) 最坏",
+      "space": "O(1)",
+      "condition": "中间位置作枢轴；三路划分避免相等元素引起无效迭代。",
+      "code": "static void splitSwap(int *a, int *b) {\n    int value = *a;\n    *a = *b;\n    *b = value;\n}\nlong long splitPartition(int a[], int n) {\n    int k = n / 2, left = 0, right = n - 1;\n    while (left < right) {\n        int pivot = a[left + (right - left) / 2];\n        int lt = left, i = left, gt = right;\n        while (i <= gt) {\n            if (a[i] < pivot) splitSwap(&a[lt++], &a[i++]);\n            else if (a[i] > pivot) splitSwap(&a[i], &a[gt--]);\n            else ++i;\n        }\n        // k is the first index of the larger group.\n        if (k < lt) right = lt - 1;\n        else if (k > gt) left = gt + 1;\n        else break;\n    }\n    long long diff = 0;\n    for (int i = 0; i < n; ++i)\n        diff += i < k ? -(long long)a[i] : a[i];\n    return diff;\n}"
+    },
+    "proof": "固定组大小后，把较小数放进较小和的一组会扩大和差。偶数时两组等大；奇数时，由于数都为正，让较大的一组再多拿一个数不会劣于反过来的安排。划分结束时跨过分界的元素已满足大小关系。",
+    "steps": [
+      "输入 [7,1,4,2,9]；两组人数为 2 与 3。",
+      "分界两侧分别取得 {1,2} 和 {4,7,9}，不要求段内有序。",
+      "和差为 20−3=17。"
+    ],
+    "cases": [
+      [
+        "[1,9]",
+        "8"
+      ],
+      [
+        "[7,1,4,2,9]",
+        "17"
+      ],
+      [
+        "[1,2,3,4]",
+        "4"
+      ]
+    ],
+    "pitfalls": [
+      "先约束组大小，再比较和差；不要把所有大数放进一个不受限的组。",
+      "平均线性不等于固定枢轴策略的最坏线性。"
+    ],
+    "takeaway": "排序只为找分界时，可用快速选择代替全排序。"
+  },
+  {
+    "id": "2017-41",
+    "year": 2017,
+    "number": 41,
+    "title": "表达式树转中缀表达式",
+    "topics": [
+      "tree",
+      "stack"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2017/preview",
+    "checked": "2026-11-17",
+    "stem": "由二叉表达式树输出等价中缀表达式，用括号保存原计算次序。结点存一个操作数或操作符。",
+    "constraints": [
+      "操作数在叶子结点，可含多个字符。",
+      "单目运算符的操作数按题图放在右子树；最外层和操作数不套括号。"
+    ],
+    "declarations": "typedef struct ExprNode {\n    char token[10];\n    struct ExprNode *left, *right;\n} ExprNode;",
+    "brute": {
+      "idea": "中序输出，每个有孩子的结点都套括号。",
+      "time": "O(n)",
+      "space": "O(h)",
+      "condition": "等价但根会多一对括号；作为便于理解的基础版本。",
+      "code": "void exprFull(const ExprNode *node) {\n    if (!node) return;\n    bool group = node->left || node->right;\n    if (group) putchar('(');\n    exprFull(node->left);\n    fputs(node->token, stdout);\n    exprFull(node->right);\n    if (group) putchar(')');\n}"
+    },
+    "bottleneck": "需要改变的是括号放置规则，遍历本身已经只访问每个结点一次。",
+    "optimized": {
+      "idea": "中序遍历并传递根标记。只给非根内部结点加括号；单目运算符因左子树为空自然在操作数之前输出。",
+      "time": "O(n)",
+      "space": "O(h)",
+      "condition": "结点字符串长度有固定上限；不拼接中间字符串。",
+      "code": "static void exprPrintNode(const ExprNode *node, bool atRoot) {\n    if (!node) return;\n    bool group = !atRoot && (node->left || node->right);\n    if (group) putchar('(');\n    exprPrintNode(node->left, false);\n    fputs(node->token, stdout);\n    exprPrintNode(node->right, false);\n    if (group) putchar(')');\n}\nvoid exprPrint(const ExprNode *root) {\n    exprPrintNode(root, true);\n}"
+    },
+    "proof": "每个内部结点输出由左右子表达式和自身运算符组成的整体。非根子表达式加括号可固定其在父表达式中的优先级，最外层省略不改变含义。",
+    "steps": [
+      "根为乘号，左侧子树是 12+3，右侧是单目负号及其操作数 4。",
+      "左侧为非根内部结点，输出 (12+3)。",
+      "根输出 *，右侧输出 (-4)，合成 (12+3)*(-4)。"
+    ],
+    "cases": [
+      [
+        "只有叶结点 12",
+        "12"
+      ],
+      [
+        "根是单目负号，右孩子 4",
+        "-4"
+      ],
+      [
+        "右子树是单目负号的乘法表达式",
+        "(12+3)*(-4)"
+      ]
+    ],
+    "pitfalls": [
+      "用字符串输出结点，不能只取 token[0]。",
+      "不能只凭有无左孩子判断叶结点。"
+    ],
+    "takeaway": "遍历次序决定拼接位置，结点角色决定是否加括号。"
+  },
+  {
     "id": "2018-41",
     "year": 2018,
     "number": 41,
@@ -575,7 +749,7 @@ export const questions = [
     "checked": "2026-11-17",
     "stem": "设计一个初始为空的队列。入队时可以申请新空间，出队位置要留给后续入队复用。队列占用的空间只增不减，每次入队和出队都要求 O(1)。",
     "constraints": [
-      "按 FIFO 顺序访问元素。",
+      "按 FIFO 顺序访问元素。初始时三个指针都为 NULL，front 为空即队空；队列没有固定满容量，spare 为空表示下次入队需要分配结点。",
       "以下解法用三根指针管理活动链和备用链。复杂度按通常的数据结构模型计算，一次结点分配计为 O(1)。"
     ],
     "declarations": "typedef struct QueueNode {\n    int data;\n    struct QueueNode *link;\n} QueueNode;\n\ntypedef struct ReuseQueue {\n    QueueNode *front;  // First active node.\n    QueueNode *rear;   // Last active node.\n    QueueNode *spare;  // First reusable node.\n} ReuseQueue;",
@@ -681,6 +855,64 @@ export const questions = [
     "takeaway": "绝对值和化成区间宽度，再用有序三指针。"
   },
   {
+    "id": "2020-42",
+    "year": 2020,
+    "number": 42,
+    "title": "前缀编码的存储、译码与判定",
+    "topics": [
+      "tree",
+      "design"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2020/preview",
+    "checked": "2026-11-17",
+    "stem": "选择一种结构保存不等长二进制编码，说明怎样把连续位串译回字符，以及怎样判断给定的码表是否有前缀冲突。",
+    "constraints": [
+      "原卷要求描述结构和过程，无需写程序。本站附 C11 实现用于练习。",
+      "字符与码字一一对应，各码字非空。B 为待译码位数，S 为码表总位数，m 为码字数，L 为最长码字位数。"
+    ],
+    "declarations": "typedef struct PrefixNode {\n    int child[2];  // 0 means no edge; index 0 itself is the root.\n    int symbol;    // -1 means no code ends at this node.\n} PrefixNode;",
+    "brute": {
+      "idea": "两两逐位比较码字，短者完全匹配就是冲突。译码时，每次在当前位置逐个尝试匹配码表。",
+      "time": "判定 O(m²L)，译码 O(BmL) 上界",
+      "space": "O(1)",
+      "condition": "判定示例见代码；连续译码仍要反复扫描码表。",
+      "code": "bool prefixPairwise(const char *const codes[], int m) {\n    for (int i = 0; i < m; ++i) {\n        for (int j = i + 1; j < m; ++j) {\n            const char *a = codes[i], *b = codes[j];\n            while (*a && *a == *b) {\n                ++a;\n                ++b;\n            }\n            if (!*a || !*b) return false;\n        }\n    }\n    return true;\n}"
+    },
+    "bottleneck": "多次比较共享的位串前缀会重复工作。二叉字典树能共享同一条前缀路径。",
+    "optimized": {
+      "idea": "用二叉字典树保存码表，0/1 分别选左右分支，终止叶保存字符。插入时检查两种前缀冲突，译码每到叶就输出并回到根。",
+      "time": "建树 O(S)，译码 O(B)",
+      "space": "O(S)",
+      "condition": "示例由调用者提供树的存储区，最多需要 S+1 个结点。",
+      "code": "bool prefixBuild(const char *const codes[], const char symbols[], int count,\n                 PrefixNode tree[], int capacity) {\n    if (capacity <= 0) return false;\n    int used = 1;\n    tree[0] = (PrefixNode){{0, 0}, -1};\n    for (int i = 0; i < count; ++i) {\n        int node = 0;\n        const char *bit = codes[i];\n        if (!*bit) return false;\n        for (; *bit; ++bit) {\n            if (*bit != '0' && *bit != '1') return false;\n            if (tree[node].symbol >= 0) return false;  // Older word is a prefix.\n            int side = *bit - '0';\n            if (!tree[node].child[side]) {\n                if (used == capacity) return false;\n                tree[used] = (PrefixNode){{0, 0}, -1};\n                tree[node].child[side] = used++;\n            }\n            node = tree[node].child[side];\n        }\n        // Duplicate word, or this word is a prefix of an older one.\n        if (tree[node].symbol >= 0 || tree[node].child[0] || tree[node].child[1])\n            return false;\n        tree[node].symbol = (unsigned char)symbols[i];\n    }\n    return true;\n}\nbool prefixDecode(const PrefixNode tree[], const char *bits) {\n    int node = 0;\n    for (; *bits; ++bits) {\n        if (*bits != '0' && *bits != '1') return false;\n        node = tree[node].child[*bits - '0'];\n        if (!node) return false;\n        if (tree[node].symbol >= 0) {\n            putchar(tree[node].symbol);\n            node = 0;\n        }\n    }\n    return node == 0;  // Reject a trailing incomplete codeword.\n}"
+    },
+    "proof": "码字对应根到标记结点的唯一位路径。某码字为另一码字的前缀当且仅当它在后者路径上，所以插入中途遇到标记、结束后遇到已有标记或后代，都是冲突。合法表中到叶即可唯一确定下一个字符。",
+    "steps": [
+      "码表为 A=0，B=10，C=11。",
+      "位串 01011 的前一位 0 达到 A，回到根。",
+      "随后 10 达到 B，最后 11 达到 C，得到 ABC。"
+    ],
+    "cases": [
+      [
+        "0 和 01",
+        "冲突，先后插入都能检出"
+      ],
+      [
+        "10 和 10",
+        "重复码字，判否"
+      ],
+      [
+        "合法码表下位串 0101",
+        "会输出完整的 AB，最后的 1 未完成，因此返回 false"
+      ]
+    ],
+    "pitfalls": [
+      "有叶结点不等于要求生成哈夫曼树；题目给的是现成的码表。",
+      "检查两种前缀方向，并处理位串在内部结点结束的情况。"
+    ],
+    "takeaway": "前缀性等价于所有码字都在字典树的叶子结点结束。"
+  },
+  {
     "id": "2021-41",
     "year": 2021,
     "number": 41,
@@ -735,6 +967,63 @@ export const questions = [
       "判断能否遍历所有边，不需要生成实际路线。"
     ],
     "takeaway": "无向连通图能一笔画完 ⇔ 奇度点为 0 或 2。"
+  },
+  {
+    "id": "2021-42",
+    "year": 2021,
+    "number": 42,
+    "title": "比较计数排序及稳定化",
+    "topics": [
+      "sorting"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2021/preview",
+    "checked": "2026-11-17",
+    "stem": "分析原题给出的比较计数排序，写出样例排序结果和比较次数，判断稳定性。若排序不稳定，将它改成稳定排序。",
+    "constraints": [
+      "原卷已有算法主体，这里保留原行为并实现稳定化。",
+      "origin 保存每一项的原下标，便于观察重复关键字的相对次序；rank 为 n 项辅助数组。"
+    ],
+    "declarations": "",
+    "brute": {
+      "idea": "每对元素只比较一次，让较大的元素排名加一。原算法遇到相等项时增加靠前元素的名次。",
+      "time": "O(n²)",
+      "space": "O(n)",
+      "condition": "结果按值有序，但相等关键字会被反转。",
+      "code": "void rankSortOriginal(const int a[], int n, int b[], int origin[], int rank[]) {\n    for (int i = 0; i < n; ++i) rank[i] = 0;\n    for (int i = 0; i < n; ++i)\n        for (int j = i + 1; j < n; ++j)\n            if (a[i] < a[j]) ++rank[j];\n            else ++rank[i];\n    for (int i = 0; i < n; ++i) {\n        b[rank[i]] = a[i];\n        origin[rank[i]] = i;\n    }\n}"
+    },
+    "bottleneck": "问题只发生在相等时的分支。用原始下标作为并列时的顺序依据。",
+    "optimized": {
+      "idea": "将 a[i] < a[j] 改为 a[i] ≤ a[j]。当 i<j 且值相等时，增加后出现元素的名次。",
+      "time": "O(n²)",
+      "space": "O(n)",
+      "condition": "次数为 n(n−1)/2，优化目标是稳定性，次数不变。",
+      "code": "void rankSortStable(const int a[], int n, int b[], int origin[], int rank[]) {\n    for (int i = 0; i < n; ++i) rank[i] = 0;\n    for (int i = 0; i < n; ++i) {\n        for (int j = i + 1; j < n; ++j) {\n            // For equal keys, the later original index ranks after the earlier one.\n            if (a[i] <= a[j]) ++rank[j];\n            else ++rank[i];\n        }\n    }\n    for (int i = 0; i < n; ++i) {\n        b[rank[i]] = a[i];\n        origin[rank[i]] = i;\n    }\n}"
+    },
+    "proof": "把元素按 (关键字, 原下标) 比较就有严格全序。每对元素仅使全序中较大的元素排名加一，因此每项排名等于前面元素个数，稳定且没有排名冲突。",
+    "steps": [
+      "原题数组是 [25,−10,25,10,11,19]，两项 25 的原下标为 0、2。",
+      "两个 25 相等时，原规则会把原下标 0 记在原下标 2 之后；新规则把下标 2 记在下标 0 之后。",
+      "稳定排序得到 [−10,10,11,19,25,25]，两个 25 保持原顺序；6 项共比较 15 次。"
+    ],
+    "cases": [
+      [
+        "全部关键字相等",
+        "稳定版保持原下标顺序"
+      ],
+      [
+        "已有序且无重复",
+        "结果不变"
+      ],
+      [
+        "两个 25 的原下标为 0、2",
+        "稳定版按 0、2 输出"
+      ]
+    ],
+    "pitfalls": [
+      "只打印数值会看不出稳定性，用原下标或附带数据验证。",
+      "应该把等号加在使后出现元素排名增长的一侧。"
+    ],
+    "takeaway": "稳定性等价于等值时按原下标排序。"
   },
   {
     "id": "2022-41",
@@ -794,6 +1083,179 @@ export const questions = [
     "takeaway": "判 BST 时递归携带全部祖先约束。"
   },
   {
+    "id": "2022-42",
+    "year": 2022,
+    "number": 42,
+    "title": "从十万多个数里找最小的 10 个",
+    "topics": [
+      "search",
+      "sorting"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2022/preview",
+    "checked": "2026-11-17",
+    "stem": "给定一个包含十万多个数的数组，找出其中最小的 10 项，重点减少平均比较次数。",
+    "constraints": [
+      "原卷只要求算法思想及平均时间、空间复杂度。代码为本站补充。",
+      "重复数据按出现次数计算，原题未指定结果顺序。代码将 10 项按升序写入结果。"
+    ],
+    "declarations": "",
+    "brute": {
+      "idea": "维护一个递增的 k 项工作表，新元素比最后一项小就插入，并挤掉原最后一项。",
+      "time": "最坏 O(nk)，k=10 时 O(n)",
+      "space": "O(k)",
+      "condition": "结果正确，进入工作表的元素最坏要移动和比较约 k 项。",
+      "code": "void smallestByInsert(const int a[], int n, int out[], int k) {\n    int used = 0;\n    for (int i = 0; i < n; ++i) {\n        if (used == k && a[i] >= out[k - 1]) continue;\n        int j = used < k ? used++ : k - 1;\n        while (j > 0 && out[j - 1] > a[i]) {\n            out[j] = out[j - 1];\n            --j;\n        }\n        out[j] = a[i];\n    }\n}"
+    },
+    "bottleneck": "大部分元素只需与当前第 k 小比较。真正进入候选表时，用大根堆向下调整可将单次代价降为 O(log k)。",
+    "optimized": {
+      "idea": "先用前 k 项建大根堆；随后每项只和堆顶比，小于堆顶才替换并下沉，最后整理候选结果。",
+      "time": "最坏 O(n log k + k log k)，k=10 时平均与最坏均 O(n)",
+      "space": "O(k)，复用结果数组时另需 O(1)",
+      "condition": "要求 1≤k≤n。可停止在堆状态以省去排序，卷面只要求选出 10 项。",
+      "code": "static void smallestDown(int heap[], int n, int parent) {\n    while (parent < n / 2) {\n        int child = 2 * parent + 1;\n        if (child + 1 < n && heap[child + 1] > heap[child]) ++child;\n        if (heap[parent] >= heap[child]) break;\n        int temp = heap[parent];\n        heap[parent] = heap[child];\n        heap[child] = temp;\n        parent = child;\n    }\n}\nvoid smallestByHeap(const int a[], int n, int out[], int k) {\n    for (int i = 0; i < k; ++i) out[i] = a[i];\n    for (int i = k / 2; i > 0; --i) smallestDown(out, k, i - 1);\n    for (int i = k; i < n; ++i) {\n        if (a[i] < out[0]) {\n            out[0] = a[i];\n            smallestDown(out, k, 0);\n        }\n    }\n    // Optional: sort only the retained items for display.\n    for (int end = k - 1; end > 0; --end) {\n        int temp = out[0];\n        out[0] = out[end];\n        out[end] = temp;\n        smallestDown(out, end, 0);\n    }\n}"
+    },
+    "proof": "堆保存已经扫描部分的最小 k 项。新值不小于候选最大值时可忽略，否则用它替换候选最大值。两种情况都维持不变式。",
+    "steps": [
+      "用较短样例 [7,3,4,1,6] 找最小 3 项。",
+      "前 3 项建大根堆，最大值为 7。",
+      "1 替换 7，堆顶变 4；6 大于 4，忽略。",
+      "对堆中候选排序，得到 [1,3,4]。"
+    ],
+    "cases": [
+      [
+        "k=1",
+        "全表最小项"
+      ],
+      [
+        "k=n",
+        "输出所有元素"
+      ],
+      [
+        "输入有多个相等最小项",
+        "按出现次数保留"
+      ]
+    ],
+    "pitfalls": [
+      "找最小 k 项用大根堆，方便淘汰候选里最大的。",
+      "复杂度可先按一般 k 写，再代入固定的 10。"
+    ],
+    "takeaway": "候选数量固定时，用堆顶守住入围门槛。"
+  },
+  {
+    "id": "2023-41",
+    "year": 2023,
+    "number": 41,
+    "title": "有向图中输出全部 K 顶点",
+    "topics": [
+      "graph"
+    ],
+    "source": "https://datastructure.ouxinyu.cn/PastPapers/Paper2023.pdf",
+    "checked": "2026-11-17",
+    "stem": "在邻接矩阵表示的非空有向图中，输出所有出度严格大于入度的顶点，并返回输出的个数。",
+    "constraints": [
+      "矩阵按行存储在一维数组，非零项表示一条有向边。",
+      "顶点按输入标签顺序输出。自环同时为入度和出度各贡献 1。"
+    ],
+    "declarations": "",
+    "brute": {
+      "idea": "对一个顶点，先单独扫其所在行求出度，再扫所在列求入度。",
+      "time": "O(V²)",
+      "space": "O(1)",
+      "condition": "直观，对矩阵存储已经是相同的渐近量级。",
+      "code": "int kVerticesSeparate(const int edge[], const char labels[], int n) {\n    int count = 0;\n    for (int i = 0; i < n; ++i) {\n        int out = 0, in = 0;\n        for (int j = 0; j < n; ++j) out += edge[(size_t)i * n + j] != 0;\n        for (int j = 0; j < n; ++j) in += edge[(size_t)j * n + i] != 0;\n        if (out > in) {\n            putchar(labels[i]);\n            ++count;\n        }\n    }\n    return count;\n}"
+    },
+    "bottleneck": "最终只关心两种度的差，可以把每个顶点的两趟循环合并。",
+    "optimized": {
+      "idea": "在同一个循环计算行与列对出入度差的贡献，差为正即输出。",
+      "time": "O(V²)",
+      "space": "O(1)",
+      "condition": "合并循环，不改变矩阵访问的渐近次数。",
+      "code": "int printKVertices(const int edge[], const char labels[], int n) {\n    int count = 0;\n    for (int i = 0; i < n; ++i) {\n        int balance = 0;\n        for (int j = 0; j < n; ++j) {\n            // Row i leaves i, and column i enters i.\n            balance += (edge[(size_t)i * n + j] != 0)\n                     - (edge[(size_t)j * n + i] != 0);\n        }\n        if (balance > 0) {\n            putchar(labels[i]);\n            ++count;\n        }\n    }\n    return count;\n}"
+    },
+    "proof": "每个 j 恰好贡献 i→j 和 j→i 的存在性差。把所有贡献累加就是出度减入度，因此只输出正差且返回正确总数。",
+    "steps": [
+      "顶点 A、B、C，边为 A→B 和 A→C。",
+      "A 的出入度差为 2；B、C 各为 −1。",
+      "输出 A，返回 1。"
+    ],
+    "cases": [
+      [
+        "单顶点无边",
+        "0"
+      ],
+      [
+        "A→B→C→A",
+        "0"
+      ],
+      [
+        "A→B 且 B→C、B→D",
+        "输出 A、B，返回 2"
+      ]
+    ],
+    "pitfalls": [
+      "不能把行和列的含义交换。",
+      "严格大于 0；入度和出度相同不输出。"
+    ],
+    "takeaway": "矩阵一行看出边，一列看入边。"
+  },
+  {
+    "id": "2024-41",
+    "year": 2024,
+    "number": 41,
+    "title": "判断拓扑序是否唯一",
+    "topics": [
+      "graph"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2024/preview",
+    "checked": "2026-11-17",
+    "stem": "给定邻接矩阵存储的有向图，判断是否恰有一个拓扑序；零个或多个均返回 0。",
+    "constraints": [
+      "非零项表示一条边，按行存储。",
+      "辅助数组由调用方提供，各有 n 项；长度为 0 时只有空拓扑序。"
+    ],
+    "declarations": "",
+    "brute": {
+      "idea": "先统计入度；每轮线性搜索所有未处理的零入度顶点，只允许找到一个。",
+      "time": "O(V²)",
+      "space": "O(V)",
+      "condition": "矩阵表示下已是同阶；已取出的顶点用 −1 标记。",
+      "code": "int topoUniqueScan(const int edge[], int n, int degree[]) {\n    for (int j = 0; j < n; ++j) {\n        degree[j] = 0;\n        for (int i = 0; i < n; ++i)\n            degree[j] += edge[(size_t)i * n + j] != 0;\n    }\n    for (int step = 0; step < n; ++step) {\n        int next = -1;\n        for (int i = 0; i < n; ++i) {\n            if (degree[i] != 0) continue;\n            if (next >= 0) return 0;\n            next = i;\n        }\n        if (next < 0) return 0;\n        degree[next] = -1;\n        for (int j = 0; j < n; ++j)\n            if (edge[(size_t)next * n + j]) --degree[j];\n    }\n    return 1;\n}"
+    },
+    "bottleneck": "不用每轮重扫全部入度来找候选。顶点的入度首次降到 0 时立刻入队。",
+    "optimized": {
+      "idea": "用 Kahn 拓扑排序维护当前所有零入度顶点。处理每个位置之前，队列必须恰好有一项。",
+      "time": "O(V²)",
+      "space": "O(V)",
+      "condition": "每个顶点最多入队一次。邻接矩阵仍需按行扫描，时间量级不变。",
+      "code": "int topoUniqueQueue(const int edge[], int n, int degree[], int ready[]) {\n    int head = 0, tail = 0;\n    for (int j = 0; j < n; ++j) {\n        degree[j] = 0;\n        for (int i = 0; i < n; ++i)\n            degree[j] += edge[(size_t)i * n + j] != 0;\n        if (degree[j] == 0) ready[tail++] = j;\n    }\n    for (int step = 0; step < n; ++step) {\n        // A unique order requires exactly one choice at every position.\n        if (tail - head != 1) return 0;\n        int v = ready[head++];\n        for (int j = 0; j < n; ++j)\n            if (edge[(size_t)v * n + j] && --degree[j] == 0)\n                ready[tail++] = j;\n    }\n    return 1;\n}"
+    },
+    "proof": "若处理未结束却没有候选，剩余图有环。若有多个候选，任何存在的完整拓扑序都可从不同候选开始，从而不唯一。每轮恰好一个且处理完全部顶点，就只有该序列。",
+    "steps": [
+      "A→B→C，初始只有 A 入度为 0。",
+      "取出 A 后只有 B 可选，取出 B 后只有 C 可选。",
+      "三轮都恰有一个候选，返回 1。"
+    ],
+    "cases": [
+      [
+        "A→B→C",
+        "1"
+      ],
+      [
+        "A→B、A→C",
+        "0，两种顺序"
+      ],
+      [
+        "A→B、B→A",
+        "0，有环"
+      ]
+    ],
+    "pitfalls": [
+      "只统计是否完成排序，会漏掉多种拓扑序。",
+      "判空必须在仍有未处理顶点时进行。"
+    ],
+    "takeaway": "每步只许一个候选，并且必须处理完所有顶点。"
+  },
+  {
     "id": "2025-41",
     "year": 2025,
     "number": 41,
@@ -849,5 +1311,63 @@ export const questions = [
       "先转换到 long long 再乘，避免 int 运算先溢出。"
     ],
     "takeaway": "逆向扫描维护后缀两端极值，再按乘数符号选择。"
+  },
+  {
+    "id": "2026-41",
+    "year": 2026,
+    "number": 41,
+    "title": "二叉搜索树中与目标最接近的结点",
+    "topics": [
+      "tree",
+      "search"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2026/preview",
+    "checked": "2026-11-17",
+    "stem": "给出一棵二叉搜索树和整数 K，找出关键字与 K 的距离最小的所有结点，输出最小距离及对应关键字。",
+    "constraints": [
+      "按严格 BST 的关键字互异约定；若左右最近值并列，两个都输出。",
+      "代码把结果交给调用方输出；空树作为扩展返回 count=0。距离在 long long 中计算。"
+    ],
+    "declarations": "typedef struct NearNode {\n    int key;\n    struct NearNode *left, *right;\n} NearNode;\n\ntypedef struct NearResult {\n    int count;\n    int keys[2];\n    long long distance;\n} NearResult;\n\nstatic NearResult nearChoose(const NearNode *lower, const NearNode *upper, int k) {\n    NearResult result = {0, {0, 0}, 0};\n    long long left = lower ? (long long)k - lower->key : LLONG_MAX;\n    long long right = upper ? (long long)upper->key - k : LLONG_MAX;\n    if (!lower && !upper) return result;\n    result.distance = left < right ? left : right;\n    if (lower && left == result.distance)\n        result.keys[result.count++] = lower->key;\n    if (upper && upper != lower && right == result.distance)\n        result.keys[result.count++] = upper->key;\n    return result;\n}",
+    "brute": {
+      "idea": "遍历整棵树，记录小于等于 K 的最大关键字与大于等于 K 的最小关键字，最后比较两者。",
+      "time": "O(n)",
+      "space": "O(h)",
+      "condition": "不利用搜索树剪枝；结果适合用来对照验证。",
+      "code": "static void nearScan(const NearNode *node, int k, const NearNode **lower,\n                     const NearNode **upper) {\n    if (!node) return;\n    if (node->key <= k && (!*lower || node->key > (*lower)->key))\n        *lower = node;\n    if (node->key >= k && (!*upper || node->key < (*upper)->key))\n        *upper = node;\n    nearScan(node->left, k, lower, upper);\n    nearScan(node->right, k, lower, upper);\n}\nNearResult nearAll(const NearNode *root, int k) {\n    const NearNode *lower = NULL, *upper = NULL;\n    nearScan(root, k, &lower, &upper);\n    return nearChoose(lower, upper, k);\n}"
+    },
+    "bottleneck": "小于 K 的值只需考虑最大者，大于 K 的值只需考虑最小者。BST 查找路径上就能保存这两个候选。",
+    "optimized": {
+      "idea": "沿 BST 查找 K。右转前记住下界候选，左转前记住上界候选；命中就直接返回，查找结束比较两侧距离。",
+      "time": "O(h)",
+      "space": "O(1)",
+      "condition": "平衡树 O(log n)，退化树最坏 O(n)。",
+      "code": "NearResult nearBst(const NearNode *node, int k) {\n    const NearNode *lower = NULL, *upper = NULL;\n    while (node) {\n        if (node->key == k) return nearChoose(node, node, k);\n        if (node->key < k) {\n            lower = node;  // The left subtree cannot improve this bound.\n            node = node->right;\n        } else {\n            upper = node;  // The right subtree cannot improve this bound.\n            node = node->left;\n        }\n    }\n    return nearChoose(lower, upper, k);\n}"
+    },
+    "proof": "遇到小于 K 的结点后，其左子树所有值更小，无法成为更好的下界，上界也不可能在那里。遇到大于 K 的结点可对称地舍弃右子树。最终两侧候选中距离最小者即答案。",
+    "steps": [
+      "根 5、右孩子 15，目标 10。",
+      "在 5 处记下下界并向右，在 15 处记下上界并向左。",
+      "比较 10−5 和 15−10，都是 5，因此输出距离 5 和关键字 5、15。"
+    ],
+    "cases": [
+      [
+        "恰好命中 K",
+        "距离 0，仅输出 K"
+      ],
+      [
+        "K 小于所有关键字",
+        "只输出 BST 最小值"
+      ],
+      [
+        "两侧距离相同",
+        "输出两侧候选"
+      ]
+    ],
+    "pitfalls": [
+      "并列时保留两侧，不能只保留查找途中遇到的第一项。",
+      "先转成宽整数再做减法。"
+    ],
+    "takeaway": "最近邻只需同时维护下界与上界。"
   }
 ];

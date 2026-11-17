@@ -18,4 +18,17 @@ $('#panel').innerHTML=html; if(tab==='questions') bindWalk(selected,questionId);
 $('#search').addEventListener('input',renderList);
 $('#topic-list').addEventListener('click',e=>{const b=e.target.closest('[data-topic]'); if(!b)return; selected=b.dataset.topic; questionId=''; navigate(); if(matchMedia('(max-width:800px)').matches) $('#detail').scrollIntoView({block:'start'});});
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]'); if(!b)return; tab=b.dataset.tab; navigate();});
+const byYear = new Map();
+for (const q of questions) {
+    if (!byYear.has(q.year)) byYear.set(q.year, []);
+    byYear.get(q.year).push(q);
+}
+$('#year-list').innerHTML = Array.from(byYear, ([year, items]) =>
+    `<div><strong>${year}</strong><ul>${items.map(q =>
+        `<li><a href="#${q.topics[0]}/questions/${q.id}">${q.number} · ${escape(q.title)}</a></li>`
+    ).join('')}</ul></div>`
+).join('');
+$('#year-list').addEventListener('click', event => {
+    if (event.target.closest('a')) $('#detail').scrollIntoView({block:'start'});
+});
 window.addEventListener('hashchange',readHash);readHash();
