@@ -19,7 +19,7 @@ export const questions = [
       "time": "O(n)",
       "space": "O(1)",
       "condition": "功能正确，但没有采用题目期望的单趟双指针方案；不据此承诺具体得分。",
-      "code": "int kthTwoPass(const Node* head, int k) {\n    if (!head || k <= 0) return 0;\n    int n = 0;\n    for (const Node* p = head->link; p; p = p->link) ++n;\n    if (k > n) return 0;\n    const Node* p = head->link;\n    for (int i = 0; i < n - k; ++i) p = p->link;\n    std::cout << p->data << '\\n';\n    return 1;\n}"
+      "code": "int kthTwoPass(const Node* head, int k) {\n    if (!head || k <= 0) return 0;\n    int n = 0;\n    for (const Node* p = head->link; p; p = p->link) ++n;\n    if (k > n) return 0;\n    const Node* p = head->link;\n    for (int i = 0; i < n - k; ++i) p = p->link;\n    printf(\"%d\\n\", p->data);\n    return 1;\n}"
     },
     "bottleneck": "两趟解先知道总长度才定位；双指针用固定间距替代长度统计。两者的渐近复杂度相同，优化点是遍历组织方式，并非从 O(n²) 降为 O(n)。",
     "optimized": {
@@ -27,7 +27,7 @@ export const questions = [
       "time": "O(n)",
       "space": "O(1)",
       "condition": "单趟组织、无额外容器，不改变链表。",
-      "code": "int kthTwoPointers(const Node* head, int k) {\n    if (!head || k <= 0) return 0;\n    const Node* fast = head->link;\n    const Node* slow = head->link;\n    for (int i = 0; i < k; ++i) {\n        if (!fast) return 0;\n        fast = fast->link;\n    }\n    while (fast) {\n        fast = fast->link;\n        slow = slow->link;\n    }\n    std::cout << slow->data << '\\n';\n    return 1;\n}"
+      "code": "int kthTwoPointers(const Node* head, int k) {\n    if (!head || k <= 0) return 0;\n    const Node* fast = head->link;\n    const Node* slow = head->link;\n    // Move fast k positions ahead of slow.\n    for (int i = 0; i < k; ++i) {\n        if (!fast) return 0;\n        fast = fast->link;\n    }\n    while (fast) {\n        fast = fast->link;\n        slow = slow->link;\n    }\n    printf(\"%d\\n\", slow->data);\n    return 1;\n}"
     },
     "proof": "快指针领先 k 条后继边。同步前进不改变这个间距；当快指针位于尾结点之后，慢指针距尾后位置恰好 k 步，即倒数第 k 个结点。",
     "steps": [
@@ -90,7 +90,7 @@ export const questions = [
       "time": "O(n)",
       "space": "O(1)",
       "condition": "满足原地和线性时间目标，不分配辅助数组。",
-      "code": "void reverseRange(int a[], int left, int right) {\n    while (left < right) {\n        int tmp = a[left];\n        a[left++] = a[right];\n        a[right--] = tmp;\n    }\n}\nvoid rotateReverse(int a[], int n, int p) {\n    if (n <= 0 || p < 0) return;\n    p %= n;\n    if (p == 0) return;\n    reverseRange(a, 0, p - 1);\n    reverseRange(a, p, n - 1);\n    reverseRange(a, 0, n - 1);\n}"
+      "code": "void reverseRange(int a[], int left, int right) {\n    while (left < right) {\n        int tmp = a[left];\n        a[left++] = a[right];\n        a[right--] = tmp;\n    }\n}\nvoid rotateReverse(int a[], int n, int p) {\n    if (n <= 0 || p < 0) return;\n    p %= n;\n    if (p == 0) return;\n    // Reverse each part, then reverse the entire array.\n    reverseRange(a, 0, p - 1);\n    reverseRange(a, p, n - 1);\n    reverseRange(a, 0, n - 1);\n}"
     },
     "proof": "两段分别逆置后得到 AᴿBᴿ；整体逆置使两段交换位置，并恢复各段内部次序，结果为 BA。三段处理长度总和为 2n，故时间为 O(n)。",
     "steps": [
@@ -153,7 +153,7 @@ export const questions = [
       "time": "O(log n)",
       "space": "O(1)",
       "condition": "等长有序序列的可行优化解；使用 long long 边界哨兵，输入数据类型为 int。",
-      "code": "int medianPartition(const int a[], const int b[], int n) {\n    int low = 0, high = n;\n    while (low <= high) {\n        int i = low + (high - low) / 2;\n        int j = n - i;\n        long long al = i == 0 ? LLONG_MIN : a[i - 1];\n        long long ar = i == n ? LLONG_MAX : a[i];\n        long long bl = j == 0 ? LLONG_MIN : b[j - 1];\n        long long br = j == n ? LLONG_MAX : b[j];\n        if (al > br) high = i - 1;\n        else if (bl > ar) low = i + 1;\n        else return static_cast<int>(std::max(al, bl));\n    }\n    throw std::invalid_argument(\"Invalid sorted input\");\n}"
+      "code": "int medianPartition(const int a[], const int b[], int n) {\n    int low = 0, high = n;\n    while (low <= high) {\n        int i = low + (high - low) / 2;\n        // The left partitions must contain exactly n values.\n        int j = n - i;\n        long long al = i == 0 ? LLONG_MIN : a[i - 1];\n        long long ar = i == n ? LLONG_MAX : a[i];\n        long long bl = j == 0 ? LLONG_MIN : b[j - 1];\n        long long br = j == n ? LLONG_MAX : b[j];\n        if (al > br) high = i - 1;\n        else if (bl > ar) low = i + 1;\n        else return (int)(al > bl ? al : bl);\n    }\n    abort();  // Unreachable for valid sorted input.\n}"
     },
     "proof": "左侧元素数固定为 i+j=n。当 al≤br 且 bl≤ar 时，两数组各自的有序性保证左侧所有元素都≤右侧所有元素；左侧最大值正是第 n 小。交叉边界不满足时，调整方向唯一，每次缩小一半搜索区间。",
     "steps": [
@@ -209,7 +209,7 @@ export const questions = [
       "time": "O(mn)，m、n 为两表有效长度",
       "space": "O(1)",
       "condition": "功能正确且不修改链表，但重复扫描，不符合尽可能高效的时间目标。",
-      "code": "const Node* suffixBrute(const Node* h1, const Node* h2) {\n    if (!h1 || !h2) return nullptr;\n    for (const Node* p = h1->link; p; p = p->link)\n        for (const Node* q = h2->link; q; q = q->link)\n            if (p == q) return p;\n    return nullptr;\n}"
+      "code": "const Node* suffixBrute(const Node* h1, const Node* h2) {\n    if (!h1 || !h2) return NULL;\n    for (const Node* p = h1->link; p; p = p->link)\n        for (const Node* q = h2->link; q; q = q->link)\n            if (p == q) return p;\n    return NULL;\n}"
     },
     "bottleneck": "两条链表从共享结点开始的尾部完全重合。先消除长度差，使两个指针距表尾一样远，就不必反复比较每一对结点。",
     "optimized": {
@@ -217,7 +217,7 @@ export const questions = [
       "time": "O(m+n)",
       "space": "O(1)",
       "condition": "不改数据或连接，只需常数个计数器与指针。",
-      "code": "const Node* suffixAligned(const Node* h1, const Node* h2) {\n    if (!h1 || !h2) return nullptr;\n    int m = 0, n = 0;\n    for (const Node* p = h1->link; p; p = p->link) ++m;\n    for (const Node* q = h2->link; q; q = q->link) ++n;\n    const Node* p = h1->link;\n    const Node* q = h2->link;\n    while (m > n) { p = p->link; --m; }\n    while (n > m) { q = q->link; --n; }\n    while (p != q) {\n        p = p->link;\n        q = q->link;\n    }\n    return p;\n}"
+      "code": "const Node* suffixAligned(const Node* h1, const Node* h2) {\n    if (!h1 || !h2) return NULL;\n    int m = 0, n = 0;\n    for (const Node* p = h1->link; p; p = p->link) ++m;\n    for (const Node* q = h2->link; q; q = q->link) ++n;\n    const Node* p = h1->link;\n    const Node* q = h2->link;\n    // Align the two pointers by their remaining lengths.\n    while (m > n) { p = p->link; --m; }\n    while (n > m) { q = q->link; --n; }\n    while (p != q) {\n        p = p->link;\n        q = q->link;\n    }\n    return p;\n}"
     },
     "proof": "对齐后两指针剩余路径长度相同，之后同步移动保持该性质。共享尾段的每个位置距表尾长度唯一，因此必在首个共享结点相遇；不共享时一起到空。",
     "steps": [
@@ -264,7 +264,7 @@ export const questions = [
     "stem": "寻找数组中出现次数严格超过一半的元素。存在则输出该元素，否则输出 −1。",
     "constraints": [
       "原题 0≤a[i]<n，因此 −1 可作为不存在的标记。",
-      "代码函数返回答案；调用方用 std::cout 输出。空数组作为扩展情况返回 −1。"
+      "代码函数返回答案；调用方用 printf 输出。空数组作为扩展情况返回 −1。"
     ],
     "brute": {
       "idea": "暴力解：依次把每个元素当候选，再扫描整个数组计数。某个候选的次数超过 n/2 即返回。",
@@ -279,7 +279,7 @@ export const questions = [
       "time": "O(n)",
       "space": "O(1)",
       "condition": "线性时间、常数空间；验证扫描不可省略。",
-      "code": "int majorityVote(const int a[], int n) {\n    if (n <= 0) return -1;\n    int candidate = 0, balance = 0;\n    for (int i = 0; i < n; ++i) {\n        if (balance == 0) candidate = a[i];\n        balance += a[i] == candidate ? 1 : -1;\n    }\n    int count = 0;\n    for (int i = 0; i < n; ++i) if (a[i] == candidate) ++count;\n    return count > n / 2 ? candidate : -1;\n}"
+      "code": "int majorityVote(const int a[], int n) {\n    if (n <= 0) return -1;\n    int candidate = 0, balance = 0;\n    for (int i = 0; i < n; ++i) {\n        if (balance == 0) candidate = a[i];\n        balance += a[i] == candidate ? 1 : -1;\n    }\n    // A surviving candidate must still be verified.\n    int count = 0;\n    for (int i = 0; i < n; ++i) if (a[i] == candidate) ++count;\n    return count > n / 2 ? candidate : -1;\n}"
     },
     "proof": "删除一对不同元素不会消除原主元素的严格多数地位。因此若主元素存在，抵消后保留的候选只能是它。但没有主元素时也可能剩下候选，必须再验证实际次数。",
     "steps": [
@@ -327,7 +327,7 @@ export const questions = [
     "stem": "链表保存 m 个整数，且每个值的绝对值不超过 n。对绝对值相同的结点，只保留第一次出现的结点，其余删除，保留者顺序不变。",
     "constraints": [
       "n 为正整数，|data|≤n；0 也属于合法值。",
-      "代码用带头结点的 Node.link；结点由 new 分配，删除时配对使用 delete。",
+      "代码用带头结点的 Node.link；结点由 malloc 分配，删除时配对使用 free。",
       "不支持把栈上或共享所有权的结点传入这组删除函数。"
     ],
     "brute": {
@@ -335,15 +335,15 @@ export const questions = [
       "time": "O(m²)",
       "space": "O(1)",
       "condition": "结果正确并原地去重，但重复检查多，适合作为基础方案。",
-      "code": "void dedupAbsBrute(Node* head) {\n    if (!head) return;\n    for (Node* p = head->link; p; p = p->link) {\n        Node* prev = p;\n        while (prev->link) {\n            Node* cur = prev->link;\n            if (std::abs(static_cast<long long>(p->data)) ==\n                std::abs(static_cast<long long>(cur->data))) {\n                prev->link = cur->link;\n                delete cur;\n            } else prev = cur;\n        }\n    }\n}"
+      "code": "void dedupAbsBrute(Node* head) {\n    if (!head) return;\n    for (Node* p = head->link; p; p = p->link) {\n        Node* prev = p;\n        while (prev->link) {\n            Node* cur = prev->link;\n            if (llabs((long long)p->data) ==\n                llabs((long long)cur->data)) {\n                prev->link = cur->link;\n                free(cur);\n            } else prev = cur;\n        }\n    }\n}"
     },
     "bottleneck": "数值范围已经给定，可用绝对值直接索引一张出现标记表，避免为每个结点重新扫描后续链表。",
     "optimized": {
       "idea": "分配并清零 n+1 个标记；一次扫描链表，首次出现则保留并标记，否则断开并释放结点。删除后前驱不移动。",
       "time": "O(m+n)：扫描 O(m)，初始化标记 O(n)",
       "space": "O(n)",
-      "condition": "以空间换时间；若只计扫描阶段为 O(m)。当 n 很大而 m 很小时，初始化成本不能忽略。",
-      "code": "void dedupAbsMarked(Node* head, int n) {\n    if (!head || n < 0) return;\n    std::vector<unsigned char> seen(static_cast<std::size_t>(n) + 1, 0);\n    Node* prev = head;\n    while (prev->link) {\n        Node* cur = prev->link;\n        std::size_t key = static_cast<std::size_t>(\n            std::abs(static_cast<long long>(cur->data)));\n        // Precondition: key <= n.\n        if (seen[key]) {\n            prev->link = cur->link;\n            delete cur;\n        } else {\n            seen[key] = 1;\n            prev = cur;\n        }\n    }\n}"
+      "condition": "以空间换时间；若只计扫描阶段为 O(m)。当 n 很大而 m 很小时，初始化成本不能忽略。 分配标记表失败时退回基础解，下列复杂度按成功分配计算。",
+      "code": "void dedupAbsMarked(Node* head, int n) {\n    if (!head || n < 0) return;\n    unsigned char *seen = (unsigned char *)calloc((size_t)n + 1, 1);\n    if (!seen) {\n        dedupAbsBrute(head);\n        return;\n    }\n    Node* prev = head;\n    while (prev->link) {\n        Node* cur = prev->link;\n        size_t key = (size_t)llabs((long long)cur->data);\n        // Precondition: key <= n.\n        if (seen[key]) {\n            prev->link = cur->link;\n            free(cur);\n        } else {\n            seen[key] = 1;\n            prev = cur;\n        }\n    }\n    free(seen);\n}"
     },
     "proof": "扫描到 cur 时，seen 恰记录此前已保留结点的绝对值。标记存在则 cur 必为重复，删除不改变此前顺序；标记不存在则保留 cur，保证每个绝对值只保留首次出现者。",
     "steps": [
@@ -374,7 +374,7 @@ export const questions = [
       "标记下标必须用绝对值，不能直接用负数 data。",
       "分配 n+1 个位置以覆盖 0 与 n。",
       "删除后不移动 prev，避免跳过连续重复。",
-      "delete 后不能再读取 cur->link，必须先保存连接。"
+      "free 后不能再读取 cur->link，必须先保存连接。"
     ],
     "takeaway": "有界值域去重 → 用绝对值作索引，标记首次出现。"
   },
@@ -406,8 +406,8 @@ export const questions = [
       "idea": "创建长度 n 的标记表，把范围内的 a[i] 映射到下标 a[i]−1；然后从左往右找首个未标记位置，若全标记则返回 n+1。",
       "time": "O(n)",
       "space": "O(n)",
-      "condition": "线性时间且不修改输入。原题没有要求 O(1) 空间；原地置换可作为以后扩展方案。",
-      "code": "int missingMarked(const int a[], int n) {\n    std::vector<unsigned char> seen(n, 0);\n    for (int i = 0; i < n; ++i) {\n        if (a[i] >= 1 && a[i] <= n) seen[a[i] - 1] = 1;\n    }\n    for (int i = 0; i < n; ++i) if (!seen[i]) return i + 1;\n    return n + 1;\n}"
+      "condition": "线性时间且不修改输入。原题没有要求 O(1) 空间；原地置换可作为以后扩展方案。 分配失败时退回基础解，复杂度按成功分配计算。",
+      "code": "int missingMarked(const int a[], int n) {\n    if (n <= 0) return 1;\n    unsigned char *seen = (unsigned char *)calloc((size_t)n, 1);\n    if (!seen) return missingBrute(a, n);\n\n    // Only values in [1, n] can affect the answer.\n    for (int i = 0; i < n; ++i) {\n        if (a[i] >= 1 && a[i] <= n) seen[a[i] - 1] = 1;\n    }\n    int i = 0;\n    while (i < n && seen[i]) ++i;\n    free(seen);\n    return i + 1;\n}"
     },
     "proof": "n 个位置不可能同时容纳 1 到 n+1 全部不同的正整数。范围外数不影响这一候选区间；标记后按递增顺序找到的首个缺口就是最小缺失正整数。",
     "steps": [
@@ -462,7 +462,7 @@ export const questions = [
       "time": "O(n²)",
       "space": "O(1)",
       "condition": "满足常数空间并正确重排，但每轮寻找尾结点导致重复扫描。",
-      "code": "void reorderBrute(Node* head) {\n    if (!head) return;\n    Node* cur = head->link;\n    while (cur && cur->link) {\n        Node* prev = cur;\n        while (prev->link->link) prev = prev->link;\n        Node* tail = prev->link;\n        if (tail == cur->link) break;\n        prev->link = nullptr;\n        tail->link = cur->link;\n        cur->link = tail;\n        cur = tail->link;\n    }\n}"
+      "code": "void reorderBrute(Node* head) {\n    if (!head) return;\n    Node* cur = head->link;\n    while (cur && cur->link) {\n        Node* prev = cur;\n        while (prev->link->link) prev = prev->link;\n        Node* tail = prev->link;\n        if (tail == cur->link) break;\n        prev->link = NULL;\n        tail->link = cur->link;\n        cur->link = tail;\n        cur = tail->link;\n    }\n}"
     },
     "bottleneck": "单链表只能向后走，反复找尾巴很慢。先把后半段逆置，原来的末尾就变成后半段的开头，之后可直接交替取结点。",
     "optimized": {
@@ -470,7 +470,7 @@ export const questions = [
       "time": "O(n)",
       "space": "O(1)",
       "condition": "三段线性处理，全程只使用常数个指针，保留结点身份与数据。",
-      "code": "void reorderLinear(Node* head) {\n    if (!head || !head->link || !head->link->link) return;\n    Node* slow = head->link;\n    Node* fast = head->link;\n    while (fast->link && fast->link->link) {\n        slow = slow->link;\n        fast = fast->link->link;\n    }\n    Node* cur = slow->link;\n    slow->link = nullptr;\n    Node* second = nullptr;\n    while (cur) {\n        Node* next = cur->link;\n        cur->link = second;\n        second = cur;\n        cur = next;\n    }\n    Node* first = head->link;\n    while (second) {\n        Node* nextFirst = first->link;\n        Node* nextSecond = second->link;\n        first->link = second;\n        second->link = nextFirst;\n        first = nextFirst;\n        second = nextSecond;\n    }\n}"
+      "code": "void reorderLinear(Node* head) {\n    if (!head || !head->link || !head->link->link) return;\n    Node* slow = head->link;\n    Node* fast = head->link;\n    while (fast->link && fast->link->link) {\n        slow = slow->link;\n        fast = fast->link->link;\n    }\n    Node* cur = slow->link;\n    // Split the list before reversing the second half.\n    slow->link = NULL;\n    Node* second = NULL;\n    while (cur) {\n        Node* next = cur->link;\n        cur->link = second;\n        second = cur;\n        cur = next;\n    }\n    Node* first = head->link;\n    while (second) {\n        Node* nextFirst = first->link;\n        Node* nextSecond = second->link;\n        first->link = second;\n        second->link = nextFirst;\n        first = nextFirst;\n        second = nextSecond;\n    }\n}"
     },
     "proof": "分割后前半段按 a1,a2,… 排列，逆置后半段按 an,a(n−1),… 排列。每轮交替接入一个结点，恰好构成目标序列；前段长度不少于后段，后段用完时剩余的至多一个中点自然留在末尾。",
     "steps": [
@@ -504,5 +504,233 @@ export const questions = [
       "递归逆置会引入 O(n) 调用栈，不符合常数额外空间要求。"
     ],
     "takeaway": "首尾交替 → 找中点、断开、逆置后半、交叉合并。"
+  },
+  {
+    "id": "2020-41",
+    "year": 2020,
+    "number": 41,
+    "title": "三个有序数组的最小三元组距离",
+    "topics": [
+      "linear",
+      "design"
+    ],
+    "source": "https://www.csgraduates.com/study_methods/408quiz/2020/",
+    "checked": "2026-11-17",
+    "stem": "从三个升序整数数组中各选一个数 a、b、c，使 |a−b| + |b−c| + |c−a| 最小。求最小距离。",
+    "constraints": [
+      "三个数组均非空，可出现负数。",
+      "函数返回距离，main 演示输出。用 long long 计算距离，避免普通 int 差值溢出。"
+    ],
+    "brute": {
+      "idea": "枚举三个数组的所有下标组合，逐个计算距离。",
+      "time": "O(mnp)",
+      "space": "O(1)",
+      "condition": "可作正确性对照。",
+      "code": "long long tripleBrute(const int a[], int m, const int b[], int n,\n                      const int c[], int p) {\n    long long best = LLONG_MAX;\n    for (int i = 0; i < m; ++i) {\n        for (int j = 0; j < n; ++j) {\n            for (int k = 0; k < p; ++k) {\n                long long d = llabs((long long)a[i] - b[j])\n                            + llabs((long long)b[j] - c[k])\n                            + llabs((long long)c[k] - a[i]);\n                if (d < best) best = d;\n            }\n        }\n    }\n    return best;\n}"
+    },
+    "bottleneck": "大部分组合不必访问。距离只由三项的最大值与最小值决定。",
+    "optimized": {
+      "idea": "三个指针从各数组首项出发。更新当前距离后，只推进指向最小值的指针。",
+      "time": "O(m+n+p)",
+      "space": "O(1)",
+      "condition": "利用数组有序性，不修改输入。",
+      "code": "long long tripleMin(const int a[], int m, const int b[], int n,\n                    const int c[], int p) {\n    int i = 0, j = 0, k = 0;\n    long long best = LLONG_MAX;\n    while (i < m && j < n && k < p) {\n        int low = a[i] < b[j] ? a[i] : b[j];\n        if (c[k] < low) low = c[k];\n        int high = a[i] > b[j] ? a[i] : b[j];\n        if (c[k] > high) high = c[k];\n\n        // The middle value cancels out in the distance formula.\n        long long distance = 2LL * ((long long)high - low);\n        if (distance < best) best = distance;\n        if (best == 0) break;\n\n        // Keeping the minimum and advancing another pointer cannot help.\n        if (a[i] == low) ++i;\n        else if (b[j] == low) ++j;\n        else ++k;\n    }\n    return best;\n}"
+    },
+    "proof": "把三值排成 x≤y≤z，距离为 2(z−x)。固定当前最小值时，另外两项只可能随指针前移而变大，无法缩小区间。处理当前组合后可安全舍弃这个最小值。",
+    "steps": [
+      "A=[1,8]，B=[4,9]，C=[7,10]，先看 (1,4,7)，距离 12。",
+      "推进 A，得到 (8,4,7)，距离 8。",
+      "推进 B，得到 (8,9,7)，距离 4。",
+      "推进 C，得到 (8,9,10)，距离仍为 4；继续推进 A 后结束。"
+    ],
+    "cases": [
+      [
+        "三个数组都含 5",
+        "0"
+      ],
+      [
+        "[1]，[5]，[8]",
+        "14"
+      ],
+      [
+        "[−4]，[0]，[2]",
+        "12"
+      ]
+    ],
+    "pitfalls": [
+      "推进最小项而非最大项。",
+      "任何一个数组读完就结束；最小项并列时任选一个推进。"
+    ],
+    "takeaway": "绝对值和化成区间宽度，再用有序三指针。"
+  },
+  {
+    "id": "2021-41",
+    "year": 2021,
+    "number": 41,
+    "title": "无向图的 EL 路径判定",
+    "topics": [
+      "graph"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2021/preview",
+    "checked": "2026-11-17",
+    "stem": "给定采用邻接矩阵存储的无向连通图，判断能否用一条路线把每条边走恰好一次。存在返回 1，否则返回 0。",
+    "constraints": [
+      "原题保证连通且至少有一条边，允许起点和终点相同。",
+      "示例用 0/1 对称矩阵，按行存进一维数组，忽略对角元。"
+    ],
+    "brute": {
+      "idea": "计算所有顶点的度并数奇度顶点。",
+      "time": "O(V²)",
+      "space": "O(1)",
+      "condition": "在题设下已经达到相同的最坏复杂度。",
+      "code": "int elFull(const int edge[], int n) {\n    int odd = 0;\n    for (int i = 0; i < n; ++i) {\n        int degree = 0;\n        for (int j = 0; j < n; ++j) {\n            if (i != j && edge[(size_t)i * n + j] != 0) ++degree;\n        }\n        odd += degree % 2;\n    }\n    return odd == 0 || odd == 2;\n}"
+    },
+    "bottleneck": "题目只需要度的奇偶性。出现第三个奇度顶点后，继续扫描也无法使已经确认的奇度顶点消失。",
+    "optimized": {
+      "idea": "逐行用异或维护度的奇偶性；数到三个奇度顶点立刻返回 0。",
+      "time": "O(V²)",
+      "space": "O(1)",
+      "condition": "改善可提前判否的输入，最坏量级与基础解相同。",
+      "code": "int elExists(const int edge[], int n) {\n    int odd = 0;\n    for (int i = 0; i < n; ++i) {\n        int parity = 0;\n        for (int j = 0; j < n; ++j) {\n            if (i != j) parity ^= edge[(size_t)i * n + j] != 0;\n        }\n        // Three confirmed odd vertices are enough to reject.\n        odd += parity;\n        if (odd > 2) return 0;\n    }\n    return odd == 0 || odd == 2;\n}"
+    },
+    "proof": "连通无向图存在欧拉迹，当且仅当奇度顶点数是 0 或 2。路线到达并离开同一顶点时消耗成对的边，只有两个端点可能为奇度。",
+    "steps": [
+      "看路径图 0—1—2—3。",
+      "四行非零项数分别为 1、2、2、1，只有两端是奇度。",
+      "返回 1，从 0 走到 3 就能各走一遍。"
+    ],
+    "cases": [
+      [
+        "四点路径",
+        "1"
+      ],
+      [
+        "三点环",
+        "1"
+      ],
+      [
+        "四点星形",
+        "0"
+      ]
+    ],
+    "pitfalls": [
+      "连通性由题设保证。若题意取消该保证，需要另查所有非孤立点是否在同一连通分量。",
+      "判断能否遍历所有边，不需要生成实际路线。"
+    ],
+    "takeaway": "无向连通图能一笔画完 ⇔ 奇度点为 0 或 2。"
+  },
+  {
+    "id": "2022-41",
+    "year": 2022,
+    "number": 41,
+    "title": "顺序存储二叉树判定 BST",
+    "topics": [
+      "tree",
+      "search"
+    ],
+    "source": "https://pgcode.cn/exams/408/years/2022/preview",
+    "checked": "2026-11-17",
+    "stem": "二叉树以数组顺序存储，缺失结点用 −1 标记。判断整个树是否满足二叉搜索树的严格大小关系。",
+    "constraints": [
+      "根下标为 0，左右孩子下标为 2i+1 和 2i+2。",
+      "有效结点值均为正整数，输入是合法的顺序存储二叉树；重复关键字判否。"
+    ],
+    "brute": {
+      "idea": "对每个结点分别遍历其左右子树，检查左边全小、右边全大。",
+      "time": "O(mh)",
+      "space": "O(h)",
+      "condition": "m 为实际结点数，h 为树高；结点可能被祖先反复检查。",
+      "code": "static bool subtreeSide(const int a[], size_t n, size_t i,\n                        int key, bool smaller) {\n    if (i >= n || a[i] == -1) return true;\n    if (smaller ? a[i] >= key : a[i] <= key) return false;\n    return subtreeSide(a, n, 2 * i + 1, key, smaller)\n        && subtreeSide(a, n, 2 * i + 2, key, smaller);\n}\nbool bstRepeated(const int a[], size_t n, size_t i) {\n    if (i >= n || a[i] == -1) return true;\n    size_t left = 2 * i + 1, right = left + 1;\n    return subtreeSide(a, n, left, a[i], true)\n        && subtreeSide(a, n, right, a[i], false)\n        && bstRepeated(a, n, left)\n        && bstRepeated(a, n, right);\n}"
+    },
+    "bottleneck": "祖先对整棵子树的限制可以随递归向下传递，每个结点无需反复遍历。",
+    "optimized": {
+      "idea": "递归传入开区间 (low, high)。左子树收紧上界，右子树收紧下界。",
+      "time": "O(m)",
+      "space": "O(h)",
+      "condition": "每个实际结点只检查一次。",
+      "code": "static bool bstWithin(const int a[], size_t n, size_t i,\n                      long long low, long long high) {\n    if (i >= n || a[i] == -1) return true;\n    int key = a[i];\n    if (key <= low || key >= high) return false;\n\n    // Pass ancestor bounds down to both children.\n    return bstWithin(a, n, 2 * i + 1, low, key)\n        && bstWithin(a, n, 2 * i + 2, key, high);\n}\nbool bstCheck(const int a[], size_t n) {\n    return bstWithin(a, n, 0, LLONG_MIN, LLONG_MAX);\n}"
+    },
+    "proof": "区间保留从根到当前结点的全部祖先约束。当前值在开区间内，恰好满足来自所有祖先的大小限制。",
+    "steps": [
+      "数组 [8,4,12,−1,6]，根 8 合法。",
+      "结点 4 落在上界 8 以下，它的右孩子 6 应同时大于 4、小于 8。",
+      "6 在 (4,8) 内，12 也大于 8，整棵树通过。"
+    ],
+    "cases": [
+      [
+        "[8,4,12,−1,6]",
+        "true"
+      ],
+      [
+        "[8,4,12,−1,9]",
+        "false"
+      ],
+      [
+        "[8,8]",
+        "false"
+      ]
+    ],
+    "pitfalls": [
+      "只比较直接父子会漏掉跨层违规。",
+      "先判断越界和 −1 再访问结点；上下界都用严格比较。"
+    ],
+    "takeaway": "判 BST 时递归携带全部祖先约束。"
+  },
+  {
+    "id": "2025-41",
+    "year": 2025,
+    "number": 41,
+    "title": "每项与后缀元素的最大乘积",
+    "topics": [
+      "linear",
+      "design"
+    ],
+    "source": "https://static.kaoyan.cn/file/question/2025/11/04/ea4c362c1e27e35785676e188b094e37.pdf",
+    "checked": "2026-11-17",
+    "stem": "对数组每个位置 i，找出 A[i] 与该位置到数组末尾的任一元素相乘所能得到的最大值，依次写入结果数组。",
+    "constraints": [
+      "允许 i=j，输入可包含正数、负数和 0。",
+      "原题使用 int 结果数组。演示将乘积和结果存为 long long；保证乘积在 int 范围内时可按卷面原型保存。"
+    ],
+    "brute": {
+      "idea": "对每个位置扫描其整个后缀，取乘积最大值。",
+      "time": "O(n²)",
+      "space": "O(1)",
+      "condition": "辅助空间不计输出数组。",
+      "code": "void mulBrute(const int a[], long long res[], int n) {\n    for (int i = 0; i < n; ++i) {\n        long long best = (long long)a[i] * a[i];\n        for (int j = i + 1; j < n; ++j) {\n            long long product = (long long)a[i] * a[j];\n            if (product > best) best = product;\n        }\n        res[i] = best;\n    }\n}"
+    },
+    "bottleneck": "相邻位置的后缀几乎相同。固定第一个因子后，乘积只需要后缀的两个极值。",
+    "optimized": {
+      "idea": "从右向左扫描，将当前位置计入后缀最小值和最大值。负因子乘最小值，非负因子乘最大值。",
+      "time": "O(n)",
+      "space": "O(1)",
+      "condition": "遍历一趟，辅助空间不计输出数组。",
+      "code": "void calMulMax(const int a[], long long res[], int n) {\n    if (n <= 0) return;\n    int low = a[n - 1], high = a[n - 1];\n    for (int i = n - 1; i >= 0; --i) {\n        // Include a[i] before computing the result: i == j is allowed.\n        if (a[i] < low) low = a[i];\n        if (a[i] > high) high = a[i];\n        int partner = a[i] < 0 ? low : high;\n        res[i] = (long long)a[i] * partner;\n    }\n}"
+    },
+    "proof": "每轮更新后 low 和 high 恰好是 A[i..n−1] 的最小值与最大值。乘以非负数时保序，乘以负数时逆序，最大值一定在对应极值处取得。",
+    "steps": [
+      "数组 [2,−3,5]，位置 2 的后缀只有 5，结果 25。",
+      "位置 1 的后缀最小值为 −3，负因子 −3 乘 −3 得 9。",
+      "位置 0 的后缀最大值为 5，正因子 2 乘 5 得 10。"
+    ],
+    "cases": [
+      [
+        "[2,−3,5]",
+        "[10,9,25]"
+      ],
+      [
+        "[−7]",
+        "[49]"
+      ],
+      [
+        "[0,0]",
+        "[0,0]"
+      ]
+    ],
+    "pitfalls": [
+      "必须先纳入当前元素再算乘积。",
+      "先转换到 long long 再乘，避免 int 运算先溢出。"
+    ],
+    "takeaway": "逆向扫描维护后缀两端极值，再按乘数符号选择。"
   }
 ];

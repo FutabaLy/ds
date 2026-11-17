@@ -1,4 +1,19 @@
-#include "dist/solutions.hpp"
+#include <iostream>
+#include <algorithm>
+#include <sstream>
+#include <cstdio>
+#include <cstdlib>
+#include <new>
+
+static std::ostringstream printed;
+static int captureOutput(const char*, int value) {
+    printed << value << '\n';
+    return 0;
+}
+
+#define printf captureOutput
+#include "dist/solutions.h"
+#undef printf
 #include <cassert>
 #include <vector>
 #include <sstream>
@@ -31,10 +46,10 @@ void testSecondBatch() {
             for(int mode=0;mode<2;++mode){
                 Node head{0,nullptr};Node* end=&head;
                 std::vector<Node*> survivors;std::fill(seen.begin(),seen.end(),false);
-                for(int v:values){end->link=new Node{v,nullptr};end=end->link;if(!seen[std::abs(v)]){survivors.push_back(end);seen[std::abs(v)]=true;}}
+                for(int v:values){void* storage=std::malloc(sizeof(Node));assert(storage);end->link=new (storage) Node{v,nullptr};end=end->link;if(!seen[std::abs(v)]){survivors.push_back(end);seen[std::abs(v)]=true;}}
                 if(mode==0)dedupAbsBrute(&head);else dedupAbsMarked(&head,bound);
                 Node* node=head.link;
-                for(std::size_t i=0;i<expected.size();++i){assert(node==survivors[i]);assert(node->data==expected[i]);Node* next=node->link;delete node;node=next;}
+                for(std::size_t i=0;i<expected.size();++i){assert(node==survivors[i]);assert(node->data==expected[i]);Node* next=node->link;std::free(node);node=next;}
                 assert(node==nullptr);
             }
             std::vector<int> input(size);
@@ -62,11 +77,52 @@ void testSecondBatch() {
     dedupAbsBrute(nullptr);dedupAbsMarked(nullptr,2);reorderBrute(nullptr);reorderLinear(nullptr);
     std::cout << "Second batch passed: shared-tail identity, dedup retention, missing positive, reorder identity and acyclic termination.\n";
 }
+void testThirdBatch() {
+    std::mt19937 rng(2025);
+    for (int trial = 0; trial < 400; ++trial) {
+        std::vector<int> a(1 + rng() % 9), b(1 + rng() % 9), c(1 + rng() % 9);
+        for (auto* v : {&a, &b, &c}) {
+            for (int& value : *v) value = static_cast<int>(rng() % 41) - 20;
+            std::sort(v->begin(), v->end());
+        }
+        assert(tripleMin(a.data(), a.size(), b.data(), b.size(), c.data(), c.size())
+            == tripleBrute(a.data(), a.size(), b.data(), b.size(), c.data(), c.size()));
+
+        std::vector<long long> expected(a.size()), actual(a.size());
+        if (trial == 0) a.front() = INT_MIN;
+        mulBrute(a.data(), expected.data(), a.size());
+        calMulMax(a.data(), actual.data(), a.size());
+        assert(actual == expected);
+
+        int n = 2 + static_cast<int>(rng() % 8);
+        std::vector<int> edge(n * n, 0);
+        for (int i = 1; i < n; ++i) {
+            edge[i * n + i - 1] = 1;
+            edge[(i - 1) * n + i] = 1;
+        }
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 2; j < n; ++j) {
+                edge[i * n + j] = edge[j * n + i] = rng() % 2;
+            }
+        }
+        assert(elExists(edge.data(), n) == elFull(edge.data(), n));
+
+        int tree[] = {50, 20, 80, 10, 30, 70, 90};
+        tree[1 + rng() % 6] = 1 + static_cast<int>(rng() % 100);
+        assert(bstCheck(tree, 7) == bstRepeated(tree, 7, 0));
+    }
+    const int valid[] = {8, 4, 12, -1, 6};
+    const int invalid[] = {8, 4, 12, -1, 9};
+    assert(bstCheck(valid, 5) && !bstCheck(invalid, 5));
+    const int star[] = {0,1,1,1, 1,0,0,0, 1,0,0,0, 1,0,0,0};
+    assert(!elExists(star, 4));
+}
+
 int main() {
+    testThirdBatch();
     testSecondBatch();
     std::mt19937 rng(408);
-    std::ostringstream output;
-    auto* old = std::cout.rdbuf(output.rdbuf());
+
     for (int n = 0; n <= 30; ++n) {
         std::vector<Node> nodes(n + 1);
         for (int i = 0; i <= n; ++i) {
@@ -77,9 +133,9 @@ int main() {
             int expected = k > 0 && k <= n;
             std::string text = expected ? std::to_string(10 * (n-k+1)) + "\n" : "";
             for (auto f : {kthTwoPass, kthTwoPointers}) {
-                output.str(""); output.clear();
+                printed.str(""); printed.clear();
                 assert(f(&nodes[0], k) == expected);
-                assert(output.str() == text);
+                assert(printed.str() == text);
                 for (int i = 0; i <= n; ++i) {
                     assert(nodes[i].data == 10 * i);
                     assert(nodes[i].link == (i < n ? &nodes[i+1] : nullptr));
@@ -88,7 +144,7 @@ int main() {
         }
     }
     assert(kthTwoPass(nullptr,1)==0 && kthTwoPointers(nullptr,1)==0);
-    std::cout.rdbuf(old);
+
     for (int n = 1; n <= 60; ++n) {
         std::vector<int> a(n);
         std::iota(a.begin(),a.end(),0);
